@@ -1,0 +1,66 @@
+@charset "utf-8";
+@import url("jqm.structure.css");
+h1,h2,h3,h4,h5,dl,dt,dd,ul,li,p{margin:0;padding:0}li{list-style:none}ul,dl{zoom:1}ul:after, dl:after {content:"";display:block;clear:both;height:0;visibility:hidden}.fl{float:left}.fr{float:right}
+.f12{font-size:12px;}.f14{font-size:14px;}.f16{font-size:16px;}.f18{font-size:18px;}.f20{font-size:20px;}.f24{ font-size:24px;}.fb{font-weight:bold}.fn{font-weight:normal;}.t2{text-indent:2em;}.unl{text-decoration:underlline;}.no_unl{text-decoration:none;}.tl{text-align:left;}.tc{text-align:center;}.tr{text-align:right;}.fc{ margin-left:auto; margin-right:auto;}.fl{float:left;}.fr{float:right;}.cb{clear:both;}.cl{clear:left;}.cr{clear:rigth;}.vm{verticle-align:middle;}.pr{position:relative;}.pa{position:absolute;}.zoom{zoom:1;}.hidden{visiility:hidden;}.overhidden{overflow:hidden;}
+.cgray{ color:#c9c9c9;}.cblue{color:#74afff;}a{text-decoration:none;color:#000}.hide{display:none}
+@font-face{font-family:"icon";src: url("fonts/icon.eot"); /* IE9 */
+  src: url("fonts/icon.eot#iefix") format("embedded-opentype"), /* IE6-IE8 */
+  url("fonts/icon.woff") format("woff"), /* chrome 6+、firefox 3.6+、Safari5.1+、Opera 11+ */
+  url("fonts/icon.ttf")  format("truetype"), /* chrome、firefox、opera、Safari, Android, iOS 4.2+ */
+  url("fonts/icon.svg#rei") format("svg"); /* iOS 4.1- */
+}
+.icon,.ui-icon{font-family: "icon";font-style: normal;font-weight:normal;-webkit-font-smoothing:antialiased}
+.icon-back:before{content:'\e606'}
+.icon-note:before{content:'\e61f'}
+.icon-txt:before{content:'\e61e'}
+.icon-user:before{content:'\e608'}
+.icon-star:before{content:'\e609'}
+.icon-phone:before{content:'\e619'}
+.icon-acc:before{content:'\e61a'}
+.icon-hot:before{content:'\e61b'}
+.icon-new:before{content:'\e61c'}
+.icon-rec:before{content:'\e61d'}
+.icon-tag:before{content:'\e621'}
+.icon-question:before{content:'\e620'}
+.icon-search:before{content:'\e607'}
+.icon-cart:before{content:'\e616'}
+.icon-set:before{content:'\e613'}
+.icon-success:before{content:'\e60d'}
+.icon-bank:before{content:'\e623'}
+.icon-lian:before{content:'\e622'}
+.icon-write:before{content:'\e60b'}
+.icon-smile:before{content:'\e60c'}
+.icon-lock:before{content:'\e600'}
+.ui-icon-arrow-r:before,.icon-right:before{content:'\e604'}
+.ui-icon-home:before{content: "\e615"}
+.ui-icon-product:before{content: "\e603"}
+.ui-icon-shop:before{content: "\e616"}
+.ui-icon-user:before{content: "\e608"}
+.icon-logo:before{content:'\e626'}
+.icon-up:before{content:'\e618'}
+.icon-down:before{content:'\e617'}
+.icon_broken:before{content:'\e624'}
+.icon-push:before{content:'\e60e'}
+/*按钮*/
+.btn_blue .ui-btn{margin:0}
+.btn_blue .ui-btn-inner{background-color:#74afff;border:0;color:#fff}
+.btn_agray .ui-btn{margin:0}
+.btn_agray .ui-btn-inner{background-color:#c9c9c9;border:0;color:#fff}
+.btn_white .ui-btn{margin:0}
+.btn_white .ui-btn-inner{background-color:#fff;border:0;color:#020202}
+/*头部尾部*/
+.header{background-color:#74afff}
+.header .ui-title{color:#fff; font-size:20px}
+.header a{color:#fff;text-decoration:none}
+.header a .icon{font-size:30px}
+.footer{background-color:#0085d0}
+.footer a{color:#46b1ee;text-decoration:none}
+.footer a:hover{color:#fff}
+.footer li.cur a{color:#fff}
+.footer a.ui-btn-up-a{color:#46B1EE}
+.footer a.ui-btn-down-a{color:#46B1EE}
+.footer .ui-icon{font-size:20px}
+.page{background-image:url(../images/bg.jpg);background-repeat:no-repeat;background-size:100% 100%;z-index:1000;/*z-index:1000是为了解决android 4.0 背景挡住内容*/}
+.main{padding:10px}
+.ui-loader-default{width:79px;height:9px;margin-left:-40px;margin-top:-5px;background:url(../images/ajax-loader.gif) no-repeat;opacity:1;box-shadow:none}
+.ui-loader .ui-icon{display:none}

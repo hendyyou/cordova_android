@@ -1,0 +1,90 @@
+﻿CACHE MANIFEST
+# 指定一个版本号
+# version 1.0
+# 该类别指定要缓存的资源文件
+CACHE:
+#html文件
+/default.html
+/index.html
+/account/account-index.html
+/account/address-index.html
+/account/consult-detail.html
+/account/favorite-index.html
+/account/feedback-detail.html
+/account/feedback-edit.html
+/account/feedback-index.html
+/account/product-consult.html
+/account/push.html
+/account/contact.html
+/account/2d-code.html
+/login/login.html
+/news/news-detail.html
+/news/news-list.html
+/order/cart-index.html
+/order/order-detail.html
+/order/order-index.html
+/product/product-detail.html
+/product/product-index.html
+/product/product-list.html
+#css文件
+/css/myjqm.css
+/css/index.css
+/css/order.css
+/css/login.css
+/css/list.css
+/css/push.css
+/css/jquery.mobile.iscrollview.css
+/css/jquery.mobile.iscrollview-pull.css
+#js文件
+/js/jquery.js
+/js/config.js
+/js/jquery.mobile-1.3.2.min.js
+/js/iscroll.js
+/js/jquery.mobile.iscrollview.js
+/js/common.js
+/js/module.js
+/js/cordova.js
+/js/utils.js
+/js/index_page.js
+#图片文件
+/images/login/logo.png
+/images/login/l_logo.png
+/images/login/d_slogo.png
+/images/login/d_logo.png
+/images/login/bg.jpg
+/images/main/pp.gif
+/images/main/select.gif
+/images/order/list.png
+/images/order/more.png
+/images/order/nopic_4.jpg
+/images/order/step.png
+/images/ajax-loader.gif
+/images/banner.jpg
+/images/bg.jpg
+/images/bg.png
+/images/icons-18-black.png
+/images/icons-18-white.png
+/images/icons-36-black.png
+/images/icons-36-white.png
+/images/loader.gif
+/images/logo.png
+/images/note.png
+/images/user.jpg
+/images/2d-code.jpg
+#字体文件
+/css/fonts/icon.eot
+/css/fonts/icon.svg
+/css/fonts/icon.ttf
+/css/fonts/icon.woff
+
+
+
+# 指定不进行缓存的资源文件
+NETWORK:
+*
+
+# 每行指定两个文件，第一个为在线时使用的资源，第二个是离线时使用的资源
+#FALLBACK:
+
+#images/large/ images/offline.jpg
+#*.html /offline.html

@@ -1,0 +1,89 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.digione.gdmobile.android"
+	version="0.0.1"
+	xmlns="http://www.w3.org/ns/widgets">
+    <name>Hello Cordova</name>
+    <preference name="loglevel"
+	    value="DEBUG" />
+    <feature name="App">
+        <param name="android-package"
+	        value="org.apache.cordova.App" />
+    </feature>
+    <name>gdmobile</name>
+    <activityDescription2>
+        digione
+    </activityDescription2>
+    <author email="zhangqr@digione.cn"
+	    href="http://www.digione.cn">
+        digione
+    </author>
+    <content src="http://mdtest.100jia.cn/default.html" />
+    <access origin="http://mdtest.100jia.cn" />
+	<!-- <content src="http://192.168.2.38/default.html" />
+	<access origin="http://192.168.2.38" /> -->
+	<preference name="fullscreen"
+		value="false" />
+    <preference name="webviewbounce"
+	    value="true" />
+    <feature name="Device">
+        <param name="android-package"
+	        value="org.apache.cordova.device.Device" />
+    </feature>
+    <feature name="NetworkStatus">
+        <param name="android-package"
+	        value="org.apache.cordova.networkinformation.NetworkManager" />
+    </feature>
+    <feature name="File">
+        <param name="android-package"
+	        value="org.apache.cordova.file.FileUtils" />
+    </feature>
+    <feature name="FileTransfer">
+        <param name="android-package"
+	        value="org.apache.cordova.filetransfer.FileTransfer" />
+    </feature>
+    <feature name="Notification">
+        <param name="android-package"
+	        value="org.apache.cordova.dialogs.Notification" />
+    </feature>
+    <feature name="Vibration">
+        <param name="android-package"
+	        value="org.apache.cordova.vibration.Vibration" />
+    </feature>
+    <feature name="SplashScreen">
+        <param name="android-package"
+	        value="org.apache.cordova.splashscreen.SplashScreen" />
+    </feature>
+    <feature name="InAppBrowser">
+        <param name="android-package"
+	        value="org.apache.cordova.inappbrowser.InAppBrowser" />
+    </feature>
+    <feature name="Accelerometer">
+        <param name="android-package"
+	        value="org.apache.cordova.devicemotion.AccelListener" />
+    </feature>
+    <feature name="LoadingDialog">
+        <param name="android-package"
+	        value="com.digione.gdmobile.android.plugins.LoadingDialog" />
+    </feature>
+    <feature name="Camera">
+        <param name="android-package"
+	        value="org.apache.cordova.camera.CameraLauncher" />
+    </feature>   
+    <feature name="Phone">    
+        <param name="android-package"
+	        value="com.digione.gdmobile.android.plugins.Phone" />
+    </feature>
+    <feature name="Notify">
+        <param name="android-package"
+	        value="com.digione.gdmobile.android.plugins.NotificationPlugin" />
+    </feature>
+	<feature name="PushSetting">
+      <param name="android-package"
+	      value="com.digione.gdmobile.android.plugins.PushSettingPlugin" />
+    </feature>
+    <feature name="GoToHome">
+      <param name="android-package"
+	      value="com.digione.gdmobile.android.plugins.GoToHome" />
+    </feature>
+    
+</widget>

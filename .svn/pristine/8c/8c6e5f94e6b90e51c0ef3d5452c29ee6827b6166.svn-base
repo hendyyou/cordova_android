@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="text_blue">#74afff</color> 
+    <color name="text_green">#9dc814</color> 
+    <color name="button_down">#e8f1ff</color>
+    
+    <drawable name="text_blue">#74afff</drawable> 
+    <drawable name="text_green">#9dc814</drawable> 
+    <drawable name="button_down">#e8f1ff</drawable>    
+</resources>

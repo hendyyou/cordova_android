@@ -1,0 +1,57 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_feedbackDetail" footer-focus="account_accountIndex">
+		<div data-role="header" data-position="fixed" class="header">
+			  <a onclick="historyBack()"><em class="icon icon-back"></em></a>
+			  <h1>投诉与建议</h1>
+			  <a href="javascript:;" onclick="locationHref('/account/feedback-edit.html')"><em class="icon icon-write"></em></a>
+		</div>
+		<div data-role="content" class="main" id="account_feedbackDetail_content">
+		</div>		
+	<script type="text/javascript">
+	executeAccess("account_feedbackDetail",true,function(){
+			var feedbackId = getUrlParam.call(this,'feedbackId');
+			account_feedbackDetail_get(feedbackId);
+	});
+	
+	function account_feedbackDetail_get(id){
+    	ajax({
+	    waitTagId:"center",
+	    url:TERMINAL_URL+'/jsonrest/mobile/Suggestions/0/show?suggestionsId='+id,
+		type:'post',
+		dataType:'json',
+		async:true,
+		cache:false,
+		timeout:30000,
+		success:account_feedbackDetail_getSuccess
+		},id);
+    }
+    
+    function account_feedbackDetail_getSuccess(data,id){
+		if(!checkJsonRight(data,"/account/feedback-detail.html?feedbackId="+id))return;
+    	var resultList = data.entity;
+    	if(resultList!=null){
+    		var html='';
+    		html += '<div class="feedback_detail"><dl><dt>提交时间：</dt><dd><strong class="fr cgray">';
+    		html += resultList.state==0?'未回复':resultList.state==1?'已回复':'数据异常';
+    		html += '</strong>';
+    		html += resultList.createTime;
+    		html += '</dd></dl><dl><dt>消息类型：</dt><dd>';
+    		html += resultList.suggestionsTypeName;
+    		html += '</dd></dl><dl><dt>问题内容：</dt><dd>';
+    		html += resultList.content;
+    		html +='</dl>';
+    		if(resultList.state == 1){
+	    		html += '<div class="dashline"></div><dl><dt>答复时间：</dt><dd>';
+	    		html += resultList.replyTime;
+		    	html += '</dd></dl><dl><dt>答复内容：</dt><dd>';
+		    	html += resultList.reply;
+		    	html += '</dd></dl>';
+    		}
+	    	html += '</div>';
+	    	$('#account_feedbackDetail_content').html(html);
+	    	jqmRefresh("account_feedbackDetail_content");
+    	}
+    }
+
+</script>
+</div>

@@ -1,0 +1,22 @@
+<div data-role="page" id="more_index_page" data-url="more_index_page">
+	<div data-role="header" data-position="fixed">
+		<h1>更多</h1>
+	</div>
+	<!-- /header -->
+	<div data-role="content">
+		<ul id="more_index_menulist" data-role="listview" data-inset="true" data-theme="a">
+			<li><a href="#" id="more_menu_search"><img src="img/more/search.png" class="ui-li-icon ui-list-menu-item">搜索</a>
+			</li>
+			<li><a href="#" id="more_menu_recentbrowse"><img src="img/more/recentbrowse.png"
+					class="ui-li-icon ui-list-menu-item">近期浏览</a></li>
+			<li><a href="#" id="more_menu_hotline"><img src="img/more/hotline.png" class="ui-li-icon ui-list-menu-item">客服热线</a>
+			</li>
+			<li><a href="#" id="more_menu_feedback"><img src="img/more/feedback.png" class="ui-li-icon ui-list-menu-item">意见反馈</a>
+			</li>
+			<li><a href="#" id="more_menu_about"><img src="img/more/about.png" class="ui-li-icon ui-list-menu-item">关于</a>
+			</li>
+		</ul>
+	</div>
+	<!-- /content -->
+</div>
+<!-- /page -->

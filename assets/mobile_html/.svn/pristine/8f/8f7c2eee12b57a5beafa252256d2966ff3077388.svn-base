@@ -1,0 +1,94 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="order_orderDetail" footer-focus="account_accountIndex">
+	<div data-role="header" data-position="fixed" class="header">
+		<a onclick="historyBack()"><em class="icon icon-back"></em></a><h1>订单详情</h1>
+	</div>
+	<div data-role="content" class="order" id="order_orderDetail_content"></div>
+<script type="text/javascript">
+executeAccess('order_orderDetail',true,function(){
+	var orderId = getUrlParam.call(this,'orderId');
+	order_orderDetail_getDetail(orderId);
+});
+function order_orderDetail_getDetail(orderId){
+	ajax({
+		waitTagId: "center",
+		url: TERMINAL_URL + '/jsonrest/mobile/Order/0/show',
+		type: 'post',
+		data: 'orderId=' + orderId,
+		dataType: 'json',
+		async: true,
+		cache: false,
+		timeout: 30000,
+		success: order_orderDetail_getDetailSuccess
+	},orderId);
+}
+function order_orderDetail_getDetailSuccess(data,orderId){
+	if(!checkJsonRight(data,"/order/order-detail.html?orderId="+orderId))return;
+	var orderDetail = data.entity;
+	var productQuantity = 0, productHtml = '<div id="order_orderDetail_main_product">';
+	var order_orderDetail_product_length=0; //产品种类数
+	for(var j=0,j_len=orderDetail.cartProductVOs.length; j<j_len; j++){
+		order_orderDetail_product_length++;
+		var cartProductVO = orderDetail.cartProductVOs[j];
+		productQuantity += cartProductVO.productNum;
+		productHtml += '<ul class="'+(order_orderDetail_product_length>2 ? ' hide ':'')+'"><dl class="'+((cartProductVO.subCartProductVOs.length>0) ? '':'bb ')+'"><dt><img style="width:100px;height:75px" src="'+(PHOTO_URL+cartProductVO.picPath)
+					+'" onerror="this.src=\'/images/order/nopic_4.jpg\'" alt="" /></dt>'
+					+'<dd><h4>'+cartProductVO.brandName+' '+cartProductVO.productType+' '+cartProductVO.productColor+'</h4>'
+					+'<p><span>&yen;'+toPenny(cartProductVO.subTotal)+'</span>'+cartProductVO.productNum+'件</p></dd></dl>';
+		if(cartProductVO.subCartProductVOs.length>0){//搭售产品
+			var subCartProductVOs = null;
+			for(var k=0,klength=cartProductVO.subCartProductVOs.length;k<klength;k++){
+			subCartProductVOs=cartProductVO.subCartProductVOs[k];
+			productHtml += '<dl class="'+(k==(klength-1) ? 'bb':'')+'"><dt><img onerror="this.src=\'/images/order/nopic_4.jpg\'" style="width:100px;height:75px" src="'+(PHOTO_URL+subCartProductVOs.picPath)
+					+ 'alt="" /></dt>'
+					+'<dd><h4>'+subCartProductVOs.brandName+' '+subCartProductVOs.productType+' '+subCartProductVOs.productColor+'<p style="color:#fd6566;"> (搭售产品)</p>'+'</h4>'
+					+'<p><span>&yen;'+toPenny(subCartProductVOs.subTotal)+'</span>'+subCartProductVOs.productNum+'件</p></dd></dl>';
+			}	
+		}
+		productHtml +='</ul>';
+	}
+	productHtml +='</div>';
+	var html = '<div class="order_dtitle"><h2 class="clearfix"><span class="fr">共'+productQuantity+'件</span>订单号：'+orderDetail.orderNo
+				+'</h2><p class="order_dstatus">'+orderDetail.statusName+'</p></div><div class="order_box"><h2 class="order_dtit clearfix"><p class="fr">供应</p>'
+				+orderDetail.sellerName+'</h2><div class="order_dlist">';
+	html += productHtml+'</div>';
+	if(order_orderDetail_product_length > 2){ html += '<p class="order_more order_click_show"><a href="javascript:void(0);">更多产品<em class="icon icon-down"></em></a></p></div>'; }
+	var createTime = $.trim(orderDetail.createTime.substring(0,10)).split('-');
+	createTime = createTime.length == 3 ? createTime[0]+'年'+createTime[1]+'月'+createTime[2]+'日' : '暂无';
+	var sendTime = '';
+	if(orderDetail.orderStatus == 3){
+		sendTime = $.trim(orderDetail.sendTime.substring(0,10)).split('-');
+		sendTime = sendTime.length == 3 ? sendTime[0]+'年'+sendTime[1]+'月'+sendTime[2]+'日' : '暂无';
+	}
+	var invoiceType = orderDetail.invoiceType == 1 ? '增值税普通发票' : (orderDetail.invoiceType == 2 ? '增值税专用发票' : '暂无');
+	html += '<div class="order_box"><h4 class="order_dtotal">订单金额：&yen;'+toPenny(orderDetail.total)+'</h4>'
+			+'<div class="order_dtxt bb"><dl><dt><nobr>收货地址：</nobr></dt><dd>'+orderDetail.address+'</dd></dl>'
+			+'<dl><dt>收货人：</dt><dd>'+orderDetail.buyerName+'</dd></dl></div>'
+			+'<div class="order_dtxt bb"><p>下单时间：'+createTime+'</p>'
+			+(orderDetail.orderStatus == 3 ? '<p>发货时间：'+sendTime+'</p>' : '')+'</div>'
+			+'<div class="order_dtxt"><p>发票类型：'+invoiceType+'</p></div>'
+			//+'<p class="order_more"><a href="javascript:void(0);">收起<em class="icon icon-up"></em></a></p>'
+			+'</div><dl class="order_dbtn"><dd class="fl btn_agray"><input type="button" value="去支付"></dd>'
+			+'<dd class="fr btn_agray"><input type="button" value="取消"></dd></dl>'
+			+'<div class="order_box"><h2 class="order_dtit">订单跟踪</h2><div class="order_step"><ul></ul><li><p>暂无</p></li></div></div>'
+			+'<dl class="order_dbtn"><dd class="fl btn_blue"><input onclick="locationHref(\'/account/feedback-edit.html\')" type="button" value="订单反馈"></dd>'
+			+'<dd class="fr btn_blue"><input type="button" onclick="phoneCall(\'4001661660\')" value="联系客服"></dd></dl>';
+	$('#order_orderDetail_content').html(html);
+	$('#order_orderDetail_content .order_click_show').off("click").on('click',function(){
+		if($('#order_orderDetail_main_product ul:eq(2)').css('display') == 'none'){
+			for(var t=2;t<order_orderDetail_product_length;t++){
+				$('#order_orderDetail_main_product ul:eq('+t+')').show();		
+			}
+			$(this).html('<a href="javascript:void(0);">收起<em class="icon icon-up"></em></a>');	
+		}
+		else{
+			for(var t=2;t<order_orderDetail_product_length;t++){
+				$('#order_orderDetail_main_product ul:eq('+t+')').hide();		
+			}
+			$(this).html('<a href="javascript:void(0);">更多产品<em class="icon icon-down"></em></a>');
+		}
+	});
+	jqmRefresh('order_orderDetail_content');
+}
+</script>
+</div> 

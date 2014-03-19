@@ -1,0 +1,20 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_contact" footer-focus="account_accountIndex">
+	<div data-role="header" data-position="fixed" class="header">
+		<a onclick="historyBack()"><em class="icon icon-back"></em></a>
+		<h1>服务中心</h1>
+	</div>
+	<div data-role="content">
+		<p style="height:30px;line-height:30px;">客服热线：<a class="cblue" href="javascript:void(0)" onclick="phoneCall('4001661660')">400-166-1660</a></p>
+		<p style="height:30px;line-height:30px;">客服邮箱：B2B400@139.com</p>
+		<p style="height:30px;line-height:30px;">建议与意见：GZ-139B2B@139.com</p>
+		<p style="height:30px;line-height:30px;">服务范围：广东省内终端公司所有客户</p>
+		<p style="height:30px;line-height:30px;">服务时间：周一到周五8:30-12:3014:00-18:00</p>
+	</div>
+	<script type="text/javascript">
+	//程序运行入口
+	executeAccess('account_contact',true,function(){
+		
+	});
+	</script>
+</div>

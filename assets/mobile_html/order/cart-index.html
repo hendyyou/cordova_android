@@ -1,0 +1,147 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="order_cartIndex" footer-focus="order_cartIndex">
+	   <div data-role="header" data-position="fixed" class="header">
+			 <h1>购物车</h1>
+			 <a class="ui-btn-right" href="javascript:order_cartIndex_delete()" id="order_cartIndex_header_set" onClick="order_cartIndex_delete()"><em class="icon icon-set "></em></a>
+		</div>
+		<div data-role="content" class="order" id="order_cartIndex_content">
+	   </div>
+	<script type="text/javascript">
+	//程序运行入口
+	executeAccess('order_cartIndex',true,function(){
+			order_cartIndex_getList();
+		});
+		/**************************** 获取数据 ********************************/
+		function order_cartIndex_getList(){	
+			var waitTagId = "center";
+			ajax({
+				waitTagId:waitTagId,
+				url:TERMINAL_URL+'/jsonrest/mobile/Cart/0/show',
+				type:'post',
+				dataType:'json',
+				async:true,
+				cache:false,
+				timeout:30000,
+				success:order_cartIndex_getListSuccess
+			});
+		}
+		function order_cartIndex_getListSuccess(data){
+			if(!checkJsonRight(data,"/order/cart-index.html"))return;
+			var html='';			
+			if(data.entity && (data.entity.length>0)){
+				var totalPrice = 0;	//货品金额总计
+				var quantity = 0;	//单个订单产品数量
+				var totalQuantity = 0;	//产品总数量
+				var product_length_plag=0; //产品种类数
+				html +='<div class="order_dtitle"><h2 class="clearfix"><span class="fr" id="order_cartIndex_totalPrice"></span><p id="order_cartIndex_totalQuantity"></p></h2></div><div class="order_cartlist"><ul data-role="listview">';
+			for(var k=0,klength=data.entity.length;k<klength;k++){
+				var resultList = data.entity[k].cartProductVOs;
+				for(var i=0,length=resultList.length; i<length; i++){
+					product_length_plag++;
+					var subCartProductVOs = resultList[i].subCartProductVOs;
+					var sale_product_length = subCartProductVOs.length;
+					totalQuantity +=resultList[i].productNum;
+					totalPrice +=resultList[i].subTotal;
+					html +='<li class="'+((resultList[i].subCartProductVOs.length>0)? "" :"bb ")+(product_length_plag>2 ? "  hide" : "")+'"><img onerror="this.src=\'/images/order/nopic_4.jpg\'" onclick="locationHref(\'/product/product-detail.html?productId='+resultList[i].productId+'\')" src="'+PHOTO_URL+resultList[i].picPath;
+					html +='" alt=""/><h3>'+resultList[i].brandName+' '+resultList[i].productType+' '+resultList[i].productColor+'</h3><dl class="order_cartIndex_controlQuantity"><input type="hidden" id="order_cartIndex_unit_price_'+i+'_'+k+'" value="'+(resultList[i].productPrice-resultList[i].preferentialPrice)+'"/><dt id="order_cartIndex_'+i+'_'+k+'">'+toPenny(resultList[i].subTotal);
+					html +='</dt><dd class="plus"><a onClick="order_cartIndex_editQuantity(1,'+i+','+k+','+sale_product_length+','+length+','+resultList[i].priceId+');" href="javascript:;">+</a></dd><dd class="input_txt"><span><input onChange="order_cartIndex_inputControl('+i+','+k+','+sale_product_length+','+length+','+resultList[i].priceId+'); "type="text" value="'+resultList[i].productNum+'" id="order_cartIndex_inputCount_'+i+'_'+k+'"></dd><dd class="minus"></span><a onClick="order_cartIndex_editQuantity(-1,'+i+','+k+','+sale_product_length+','+length+','+resultList[i].priceId+');" href="javascript:;">-</a></dd></dl><em class="order_cartlist_del hide" id="order_cartlist_deleteData"><a href="#" onClick="order_cartIndex_deleteData('+resultList[i].priceId+')">删除</a></em></li>';			
+					//搭售产品
+					if(subCartProductVOs.length > 0){		
+					  for(var j=0,slength=subCartProductVOs.length;j<slength;j++){
+						totalPrice +=subCartProductVOs[j].subTotal;
+						html +='<li class=" '+(j==(slength-1) ? "bb" : " ")+(product_length_plag>2 ? " hide" : "")+'"><img onerror="this.src=\'/images/order/nopic_4.jpg\'" onclick="locationHref(\'/product/product-detail.html?productId='+subCartProductVOs[j].productId+'\')" src="'+PHOTO_URL+subCartProductVOs[j].picPath;
+						html +='" alt=""/><h3>'+subCartProductVOs[j].brandName+' '+subCartProductVOs[j].productType+' '+subCartProductVOs[j].productColor+'<span style="color:#fd6566;font-size:12px;"> (搭售产品)</span></h3><dl class="order_cartIndex_controlQuantity"><dt id="order_cartIndex_'+i+'_'+j+'_'+k+'">'+toPenny(subCartProductVOs[j].subTotal);
+						html +='</dt><dd class="input_txt_txt"><input readonly="readonly"  type="text" value="'+(subCartProductVOs[j].productNum*resultList[i].productNum)+'" id="order_cartIndex_inputCount_'+i+'_'+j+'_'+k+'"></dd><input type="hidden" id="order_cartIndex_unit_price_'+i+'_'+j+'_'+k+'"  value="'+(subCartProductVOs[j].productPrice-subCartProductVOs[j].preferentialPrice)+'"/><input type="hidden" value="'+subCartProductVOs[j].productNum+'" id="order_cartIndex_percent_'+i+'_'+j+'_'+k+'"/></dl></li>';
+					  }
+					}
+				}
+			} 
+				html +='</ul>';
+				if(product_length_plag> 2){
+				html +='<p class="order_more order_click_show"><a href="javascript:void(0);" onclick="order_cartIndex_more()" id="order_cartIndex_more">更多产品<em class="icon icon-down"></em></a></p>';
+				}
+				html +='</div><p class="order_dbtn btn_blue"><input onclick="locationHref(\'/order/order-confirm.html\')" type="button" value="去结算"></p>';
+			}else{
+				html +='<div class="cart_index"><h4 class="icon icon-cart"></h4><span>购物车空空如也，去首页逛逛吧！</span></div>';
+			}
+			$('#order_cartIndex_content').html(html);
+			$('#order_cartIndex_totalPrice').html('总价(不计运费)：<span>'+toPenny(totalPrice)+'</span>');
+			$('#order_cartIndex_totalQuantity').html('共'+totalQuantity+'件产品');
+			jqmRefresh("order_cartIndex_content");
+		}
+		//购买数量加减
+		function order_cartIndex_editQuantity(num,index,index1,sale_length,length,priceId){
+			var	obj=$('#order_cartIndex_inputCount_'+index+'_'+index1);		
+			var total = parseInt(obj.val()) + parseInt(num);	
+			if(total<1){
+				obj.val('1');
+				total=1;
+			}
+			else{obj.val(total);}
+			var	unit_price=parseInt($('#order_cartIndex_unit_price_'+index+'_'+index1).val());//主商品单价
+			var	product_mount=parseInt(total);//主商品个数
+			var all_mount =0;//总数量
+			var all_price =0;//总价格
+			$('#order_cartIndex_'+index+'_'+index1).html(toPenny(unit_price*product_mount));	
+			if(sale_length>0){//搭售产品
+				for(var i=0;i<sale_length;i++){				
+				  var sale_product_mount=parseInt($('#order_cartIndex_percent_'+index+'_'+i+'_'+index1).val())*total;
+					$('#order_cartIndex_inputCount_'+index+'_'+i+'_'+index1).val(sale_product_mount);
+					var	sale_unit_price=parseInt($('#order_cartIndex_unit_price_'+index+'_'+i+'_'+index1).val());
+					$('#order_cartIndex_'+index+'_'+i+'_'+index1).html(toPenny(sale_product_mount*sale_unit_price));	
+				}
+			}
+			for(var j=0,jlength=$('.order_cartlist dd span input').length;j<jlength;j++){
+				all_mount +=parseInt($('.order_cartlist dd span input:eq('+j+')').val());		
+			}
+			for(var k=0,klength=$('.order_cartlist dt').length;k<klength;k++){
+				all_price += parseInt($('.order_cartlist dt:eq('+k+')').html())*100;
+			}
+			$('#order_cartIndex_totalPrice span').html(toPenny(all_price));
+			$('#order_cartIndex_totalQuantity').html('共'+all_mount+'件产品');
+			jqmRefresh("order_cartIndex_content");
+			order_cartIndex_editCart(priceId,total);
+		}
+		//购买数量输入控制
+		function order_cartIndex_inputControl(index,index1,sale_length,length,priceId){
+			var	obj=$('#order_cartIndex_inputCount_'+index+'_'+index1);
+			var val=$.trim(obj.val());
+			var maxBuy = 200000;
+			if(isNaN(val) || val <= 0){
+				showTip('数量必须为数字且至少为1');
+				obj.val('1');
+			}else if(val >= maxBuy){
+				showTip('您订购的这款机型采购批量较大，请您采用“批量采购”功能。');
+				obj.val('1');
+			}
+			order_cartIndex_editQuantity(0,index,index1,sale_length,length,priceId);
+		}
+		//购物车内的产品数量，针对文本框输入的产品数量
+		function order_cartIndex_editCart(priceId,quantity){
+			var cart=JSON.parse(getCookie(card_cookie));
+			for(var i=0,length=cart.length;i<length;i++) {
+				if(cart[i].priceId==priceId){
+					cart[i].quantity=parseInt(quantity);
+					break;
+				}
+			}
+			setCookie(card_cookie,JSON.stringify(cart),30);
+		}
+		//更多按钮
+		function order_cartIndex_more(){
+			$('.order_cartlist li').removeClass('hide');
+			$('#order_cartIndex_more').hide();
+		}
+		//删除购物车按钮 
+		function order_cartIndex_delete(){ 
+			$('.order_cartIndex_controlQuantity dd').toggle();
+			$('.order_cartlist .order_cartlist_del').toggle();
+		}
+		//删除购物车数据
+		function order_cartIndex_deleteData(proId){ 
+			removeCardCookie(proId);
+			order_cartIndex_getList();
+			showTip('删除成功！');
+		}
+	</script>
+</div> 

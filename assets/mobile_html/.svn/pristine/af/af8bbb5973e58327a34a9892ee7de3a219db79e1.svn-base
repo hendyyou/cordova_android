@@ -1,0 +1,16 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_2dCode" footer-focus="account_accountIndex">
+	<div data-role="header" data-position="fixed" class="header">
+		<a onclick="historyBack()"><em class="icon icon-back"></em></a>
+		<h1>扫我下载</h1>
+	</div>
+	<div data-role="content" align="center">
+		<img src="/images/2d-code.jpg"/>
+	</div>
+	<script type="text/javascript">
+	//程序运行入口
+	executeAccess('account_2dCode',true,function(){
+		
+	});
+	</script>
+</div>

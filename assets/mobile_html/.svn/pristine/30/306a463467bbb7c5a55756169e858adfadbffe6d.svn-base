@@ -1,0 +1,150 @@
+﻿<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="index" footer-focus="index">
+	<div class="banner hide">
+     <div class="ban_logo"><em class="icon icon-logo"></em></div>
+     <dl class="i_note" id="index_iNote">
+        <dt class="icon icon-note"></dt>
+        <dd>
+           <ul id="index_noticeList"></ul>
+        </dd>
+     </dl>
+  	</div>
+	<div class="home_index">
+		<style type="text/css">
+			.swiper-container{
+				margin-bottom:10px;
+				height:200px;
+				overflow:hidden;
+			}
+			.swiper-slide{
+				width:100%;
+				text-align:center;
+				overflow:hidden;
+			}
+			.swiper-slide img{
+				height:100%;
+			}
+		</style>
+		<div id="index_advertisement_box"></div>
+        <div class="home_nav">
+            <ul>
+               <li class="home_news"><a href="javascript:;" onclick="locationHref('/news/news-list.html')"><em class="icon"></em>政策资讯</a></li>
+               <li class="home_recommend"><a href="javascript:;" onclick="locationHref('/product/product-list.html?type=5')"><em class="icon"></em>推荐专区</a></li>
+               <li class="home_service"><a href="javascript:;" onclick="locationHref('/account/contact.html')"><em class="icon"></em>服务中心</a></li>
+            </ul>
+        </div>
+    </div>
+	<div data-role="content" class="home_list">
+		<ul data-role="listview">
+		    <li><em class="ui-li-icon icon icon-txt"></em><a href="javascript:;" onclick="locationHref('/order/order-index.html')">我的订单</a></li>
+		    <li><em class="ui-li-icon icon icon-star"></em><a href="javascript:;" onclick="locationHref('/account/favorite-index.html')">我的收藏</a></li>
+			<li class="adisabled"><em class="ui-li-icon icon icon-bank"></em><a href="javascript:void(0);">我的资金</a></li>
+			<li class="adisabled"><em class="ui-li-icon icon icon-lian"></em><a href="javascript:void(0);">供应链管理</a></li>
+		</ul>
+	</div>
+	<script type="text/javascript">
+	//程序运行入口
+	executeAccess('index',true,function(){
+		//index_loadNotice();
+		index_advertisementList();
+	});
+	function index_advertisementList(){
+		if(!window.index_autoScroll_data){
+			ajax({
+				waitTagId:'center',
+				url:TERMINAL_URL+'/jsonrest/mobile/Home/1/advertisement',
+				type:'get',//非必须.默认get
+				dataType:'json',//非必须.默认text
+				async:true,//非必须.默认true
+				cache:false,//非必须.默认false
+				timeout:30000,//非必须.默认30秒
+				success:index_advertisementListSuccess//非必须
+			});
+		}else index_advertisementListSuccess(window.index_autoScroll_data);
+	}
+	function index_advertisementListSuccess(data){
+		if(!checkJsonRight(data,"/index.html"))return;
+		var html='';
+		if(data.entity.content){
+			var imagerotate=data.entity.content;
+			for(var i=0,length=imagerotate.length;i<length;i++){
+				var image = imagerotate[i];
+				var src = PHOTO_URL+image.uploadPath;
+				var pUrl = image.linkUrl;
+				var stReg1 = /(product\-search\.html)\?.*?=([^&]*)/;
+				var stReg2 = /(product\-detail\.html)\?.*?=([^&]*)/;
+				var stReg3 = /(newscontent\.html)\?.*?=([^&]*)/;
+				var st = pUrl.match(stReg1);
+				if(!st)st = pUrl.match(stReg2);
+				if(!st)st = pUrl.match(stReg3);
+				if(!st)continue;
+				var sUrl = $.trim(st[1]);
+				var sParam = $.trim(st[2]);
+				if(sUrl == "product-search.html")sUrl = "/product/product-list.html?keyword="+encodeURIComponent(sParam);
+				if(sUrl == "product-detail.html")sUrl = "/product/product-detail.html?productId="+sParam;
+				if(sUrl == "newscontent.html")sUrl = "/news/news-detail.html?newsId="+sParam;
+				html+='<div class="swiper-slide"><img onclick="locationHref(\''+sUrl+'\')" src="'+src+'" alt="'+image.titleName+'"/></div>';	
+			}
+	   }
+	   html = '<div class="swiper-container"><div class="swiper-wrapper">'+html+'</div></div>';
+	   $("#index_advertisement_box").html(html);
+	   var myScroll = new Swiper('.swiper-container',{
+			autoplay : 5000,
+			loop:true,
+			grabCursor: true
+		});
+	   if(!window.index_autoScroll_data){
+			window.index_autoScroll_data = data;
+		}
+	}
+	function index_loadNotice(){
+		if(!window.index_autoScroll_data){
+			ajax({
+				waitTagId:'center',
+				url:TERMINAL_URL+'/jsonrest/mobile/Home/1/news',
+				type:'post',
+				dataType:'json',
+				async:true,
+				cache:false,
+				timeout:30000,
+				success:index_loadNoticeSuccess
+			});
+		}else index_loadNoticeSuccess(window.index_autoScroll_data);
+	}
+	function index_loadNoticeSuccess(data){
+		if(!checkJsonRight(data,"/index.html"))return;
+		var html = [];
+		var newsList = data.entity.content;
+		if(newsList){
+			var len = newsList.length;
+			if(len>6)len = 6;
+			for(var i = 0; i < len; i++){			
+				var news = newsList[i];
+				var title = news.title;
+				var newsId = news.id;
+				var time = news.createTime;
+				var link = news.link;
+				html.push('<li ');
+				if(link){
+					html.push('><a href="javascript:;" onclick="locationHref(\''+link+'\')" target="_blank">'+title+'</a></li>');
+				}else{				
+					html.push('><a href="javascript:;" onclick="locationHref(\'/news/news-detail.html?newsId='+newsId+'\')">'+title+'</a></li>');
+				}
+			}
+		}
+		$('#index_noticeList').html(html.join(''));
+		jqmRefresh('index_noticeList');
+		if(!window.index_autoScroll_data){
+			window.index_autoScroll_data = data;
+			setInterval('index_autoScroll("#index_iNote dd")',4000);
+		}
+	}
+	function index_autoScroll(obj){  
+		$(obj).find("ul:first").animate({  
+		    marginTop:"-39px" 
+		},1000,function(){  
+		    $(this).css({marginTop:"0px"}).find("li:first").appendTo(this);  
+		});
+	} 
+	</script>
+</div>

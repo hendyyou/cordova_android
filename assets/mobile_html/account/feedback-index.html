@@ -1,0 +1,91 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_feedbackIndex" footer-focus="account_accountIndex">
+		<div data-role="header" data-position="fixed" class="header">
+			  <a onclick="historyBack()"><em class="icon icon-back"></em></a>
+			  <h1>投诉与建议</h1>
+			  <a href="javascript:account_feedbackIndex_add()"><em class="icon icon-write"></em></a>
+		</div>
+	  	<div data-role="content" class="main">
+	  		<div>
+				<div class="feedback_list">
+					<ul data-role="listview" id="account_feedbackIndex_content">
+					</ul>
+				</div>
+			</div>
+		</div>
+    <script type="text/javascript">
+    //程序运行入口
+	executeAccess("account_feedbackIndex",true,function(){
+		account_feedbackIndex_reset();
+		account_feedbackIndex_getList();
+	},{onPullDown:account_feedbackIndex_onPullDown,onPullUp:account_feedbackIndex_onPullUp});
+    function account_feedbackIndex_onPullDown(event){
+    	account_feedbackIndex_param.currentPage = 1;
+    	account_feedbackIndex_param.pullDirection = "down";
+    	account_feedbackIndex_getList();
+    }
+    function account_feedbackIndex_onPullUp(event){
+    	account_feedbackIndex_param.currentPage++;
+    	account_feedbackIndex_param.pullDirection = "up";
+    	account_feedbackIndex_getList();
+    }
+    var account_feedbackIndex_param = {};
+	function account_feedbackIndex_reset(){
+		account_feedbackIndex_param = {
+			currentPage:1,
+			pageSize:10,
+			pullDirection : 'down'
+    	}	
+	}
+    function account_feedbackIndex_getList(){
+    	var waitTagId = "center";
+    	ajax({
+		    waitTagId:waitTagId,
+		    url:TERMINAL_URL+'/jsonrest/mobile/Suggestions/0/search',
+		    data:'searchSuggestionsVO.pageSize='+account_feedbackIndex_param.pageSize+'&searchSuggestionsVO.currentPage='+account_feedbackIndex_param.currentPage,
+			type:'post',
+			dataType:'json',
+			async:true,
+			cache:false,
+			timeout:30000,
+			success:account_feedbackIndex_getListSuccess
+		});
+    }
+    
+    function account_feedbackIndex_getListSuccess(data){
+		if(!checkJsonRight(data,"/account/feedback-index.html"))return;
+		var resultList = [];
+		if(data.entity && data.entity.resultList)resultList = data.entity.resultList
+		if(data.entity && data.entity.currentPage)account_feedbackIndex_param.currentPage = data.entity.currentPage;
+		var html='';
+		for(var i=0, length = resultList.length; i < length; i++){
+			var feedbackState = resultList[i].state;
+			html += '<li><a href="#" onclick="account_feedbackIndex_see('+resultList[i].id+')"><dl><dt>提交时间：</dt><dd><strong class="fr">';
+			html += feedbackState==0?'未回复':feedbackState==1?'已回复':'数据异常';
+			html += '</strong>';
+			html += resultList[i].createTime;
+			html += '</dd></dl><dl><dt>消息类型：</dt><dd>';
+			html += resultList[i].suggestionsTypeName;
+			html += '</dd></dl><dl><dt>问题内容：</dt><dd>';
+			html += resultList[i].content;
+			html += '</dl></a></li>';
+		}
+    	if(account_feedbackIndex_param.pullDirection == "down")$('#account_feedbackIndex_content').html(html);
+    	else if(account_feedbackIndex_param.pullDirection == "up")$('#account_feedbackIndex_content').append(html);
+		var sContent = $.trim($('#account_feedbackIndex_content').html());
+		if(sContent == ""){
+			var html = '<div class="feedback_index"><h4 class="icon icon-star"></h4><span>您还没进行过投诉或建议</span></div>';
+			$('#account_feedbackIndex_content').html(html);
+		}
+    	jqmRefresh("account_feedbackIndex_content");
+    }
+    /*编辑按钮新增事件*/
+    function account_feedbackIndex_add(){
+    	locationHref('/account/feedback-edit.html');	
+    }
+    /*点击查看事件*/
+	function account_feedbackIndex_see(id){
+		locationHref('/account/feedback-detail.html?feedbackId='+id);	
+	}    
+    </script>
+</div>

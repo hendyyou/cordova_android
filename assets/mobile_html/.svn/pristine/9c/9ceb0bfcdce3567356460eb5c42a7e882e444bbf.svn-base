@@ -1,0 +1,101 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_favoriteIndex" footer-focus="index">
+		<div data-role="header" data-position="fixed" class="header">
+			 <a onclick="historyBack()"><em class="icon icon-back"></em></a>
+			 <h1>我的收藏</h1>
+			 <a href="javascript:account_favoriteIndex_getListSuccess_list_set()" id="account_favoriteIndex_header_set"><em class="icon icon-set"></em></a>
+		</div>
+		<div data-role="content" class="main">
+		<div class="favorite_list">
+		<ul data-role="listview" id="account_favoriteIndex_content_listview">
+		</ul></div>
+		</div>
+<script type="text/javascript">
+//程序运行入口
+executeAccess("account_favoriteIndex",true,function(){
+	account_favoriteIndex_reset();
+	account_favoriteIndex_getList();
+},{onPullDown:account_favoriteIndex_onPullDown,onPullUp:account_favoriteIndex_onPullUp});
+
+function account_favoriteIndex_onPullDown(event){
+	account_favoriteIndex_param.currentPage = 1;
+	account_favoriteIndex_param.pullDirection = "down";
+	account_favoriteIndex_getList();
+}
+function account_favoriteIndex_onPullUp(event){
+	account_favoriteIndex_param.currentPage++;
+	account_favoriteIndex_param.pullDirection = "up";
+	account_favoriteIndex_getList();
+}
+/**************************** 获取数据 ********************************/
+var account_favoriteIndex_param = {};
+function account_favoriteIndex_reset(){
+	account_favoriteIndex_param = {
+		pullDirection:"down",
+		currentPage:1,
+		pageSize:10
+	}
+}
+function account_favoriteIndex_getList(){
+	var count = account_favoriteIndex_param.pageSize;
+	var page = account_favoriteIndex_param.currentPage;
+	var waitTagId = "center";
+	ajax({
+	    waitTagId:waitTagId,
+	    url:TERMINAL_URL+'/jsonrest/mobile/Favorite/0/getAll?searchVO.currentPage='+page+'&searchVO.pageSize='+count,
+		type:'post',
+		dataType:'json',
+		async:true,
+		cache:false,
+		timeout:30000,
+		success:account_favoriteIndex_getListSuccess
+	});
+}
+function account_favoriteIndex_getListSuccess(data){
+	if(!checkJsonRight(data,"/account/favorite-index.html"))return;
+	var resultList = [];
+	if(data.entity && data.entity.returnDate && data.entity.returnDate.resultList)resultList = data.entity.returnDate.resultList;
+	if(data.entity && data.entity.returnDate && data.entity.returnDate.currentPage)account_favoriteIndex_param.currentPage = data.entity.returnDate.currentPage;
+	var html='';	
+	for(var i=0,length=resultList.length; i<length; i++){	
+		var custPrice=toPenny(resultList[i].custPrice);	
+		html +='<li><a href="javascript:;" onclick="locationHref(\'/product/product-detail.html?productId='+resultList[i].productId+'\')"><img onerror="this.src=\'/images/order/nopic_4.jpg\'" style="width:80px;height:60px" src="'+PHOTO_URL+resultList[i].picPath+'"/><h3>'
+		+resultList[i].brandName+' '+resultList[i].productType+'</h3><p class="cgray">'+resultList[i].productColor+
+		'</p><h5 class="cblue">￥'+custPrice+'</h5></a><span onclick="account_favoriteIndex_getListSuccess_list_delete('+resultList[i].favoriteId+')" class="';
+		if(account_favoriteIndex_param.currentPage==1)html +='hide ';
+		else if($('#account_favoriteIndex_content_listview span').hasClass("hide"))html +='hide ';
+		html +=' del">删除</span></li>';
+	}
+	if(account_favoriteIndex_param.pullDirection == "down")$('#account_favoriteIndex_content_listview').html(html);
+	else if(account_favoriteIndex_param.pullDirection == "up")$('#account_favoriteIndex_content_listview').append(html);
+	var sContent = $.trim($('#account_favoriteIndex_content_listview').html());
+	if(sContent == ""){
+		$("#account_favoriteIndex_header_set").hide();
+		var html = '<div class="favorite_index"><h4 class="icon icon-star"></h4><span>您的收藏夹还没有商品</span></div>';
+		$('#account_favoriteIndex_content_listview').html(html);
+	}else $("#account_favoriteIndex_header_set").show();
+	jqmRefresh("account_favoriteIndex_content_listview");
+}
+/*删除按钮交替出现*/
+function account_favoriteIndex_getListSuccess_list_set(){
+	if($('#account_favoriteIndex_content_listview span').hasClass("hide"))
+	$('#account_favoriteIndex_content_listview span').removeClass("hide");
+	else $('#account_favoriteIndex_content_listview span').addClass("hide");
+}
+/*删除收藏夹*/
+function account_favoriteIndex_getListSuccess_list_delete(favoriteId){
+	ajax({
+		url:TERMINAL_URL+'/jsonrest/mobile/Favorite/0/delete?favoriteIds='+favoriteId,
+		dataType:'json',//非必须.默认text
+		error:function(){},		
+		success:function(data){
+			if(!checkJsonRight(data,"/account/favorite-index.html"))return;
+			showTip("该收藏删除成功");
+			account_favoriteIndex_param.pullDirection = "down";
+			account_favoriteIndex_param.currentPage="1";
+			account_favoriteIndex_getList();
+		}
+	});	  	
+}
+</script>
+</div>

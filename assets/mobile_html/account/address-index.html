@@ -1,0 +1,61 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_addressIndex" footer-focus="account_accountIndex">
+	<div data-role="header" data-position="fixed" class="header">
+		<a onclick="historyBack()"><em class="icon icon-back"></em></a>
+		<h1>门店收货地址</h1>
+	</div>
+	<div data-role="content" class="main">
+        <div class="address">
+        	<ul data-role="listview" id="account_addressIndex_AddressList">
+            </ul>
+         </div>   
+    </div>
+   <script type="text/javascript">
+	executeAccess("account_addressIndex",true,function(){
+		account_addressIndex_getList();//获得地址数据
+	});
+	function account_addressIndex_getList(){
+		 ajax({
+                waitTagId:'center',
+                url:TERMINAL_URL+'/jsonrest/mobile/ConsigneeAddress/0/search',
+                type:'get',//非必须.默认get
+                dataType:'json',//非必须.默认text
+                async:true,//非必须.默认true
+                cache:false,//非必须.默认false
+                timeout:30000,//非必须.默认30秒
+                success:account_addressIndex_getListSuccess
+		 })
+	}
+	function account_addressIndex_getListSuccess(data){
+		if(!checkJsonRight(data,"/account/address-index.html"))return;
+		var html="";
+		var state;//审核状态
+		var type;//地址类型
+		var code=data.entity;
+		for(var i=0;i<code.length;i++){
+			state=code[i].auditState;
+			type=code[i].type;
+			html+='<li><h3><span class="cgray">';
+			if(state==1){
+				html+='审核通过</span>';
+			}
+			else if(state==2){
+				html+='审核未通过</span>';
+			}
+			else if(state==0){
+				html+='待审核</span>';
+			}
+			if(type==1){
+				html+='发票收货地址</h3>';
+			}
+			else if(type==2){
+				html+='手机收货地址</h3>';
+			}
+			html+='<p>'+code[i].name+'<span>'+code[i].mobile+'</span></p>';
+			html+='<p>'+code[i].address+'</p></li>';
+		}
+		$("#account_addressIndex_AddressList").html(html);
+		jqmRefresh("account_addressIndex_AddressList");	
+	}
+   </script>
+</div>

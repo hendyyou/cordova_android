@@ -1,0 +1,21 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="product_productIndex" footer-focus="product_productIndex">
+	<div data-role="header" data-position="fixed" class="header">
+		<h1>产品中心</h1>
+	</div>
+	<div data-role="content" class="index_list">
+		<ul data-role="listview">
+		    <li><em class="ui-li-icon icon icon-phone"></em><a href="javascript:;" onclick="locationHref('/product/product-list.html?type=1')">手机</a></li>
+		    <li><em class="ui-li-icon icon icon-acc"></em><a href="javascript:;" onclick="locationHref('/product/product-list.html?type=2')">配件</a></li>
+		    <li><em class="ui-li-icon icon icon-hot"></em><a href="javascript:;" onclick="locationHref('/product/product-list.html?type=3')">热卖专区</a></li>
+		    <li><em class="ui-li-icon icon icon-new"></em><a href="javascript:;" onclick="locationHref('/product/product-list.html?type=4')">新品专区</a></li>
+		    <li><em class="ui-li-icon icon icon-rec"></em><a href="javascript:;" onclick="locationHref('/product/product-list.html?type=5')">重点机型专区</a></li>
+		</ul>
+	</div>
+	<script type="text/javascript">
+	//程序运行入口
+	executeAccess('product_productIndex',true,function(){
+		
+	});
+	</script>
+</div>

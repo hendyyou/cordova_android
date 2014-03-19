@@ -1,0 +1,47 @@
+@charset "utf-8";
+.home_banner{position:relative;width:100%;margin-bottom:5px;overflow:auto;text-align:center}
+.home_banner ul{list-style:none;width:300%;}
+.home_banner ul li{display:block;float:left;width:33%;}
+.home_banner ul li img{display:block;width:100%;margin:0 auto}
+.home_banner .dots{position:absolute;right:8px;bottom:0;margin:0;padding:0;-webkit-filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));-moz-filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));-ms-filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));-o-filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));filter:drop-shadow(0 1px 2px rgba(0,0,0,.3));}
+.home_banner .dots li{display:inline-block;width:6px;height:6px;margin:0 4px;text-indent:-999em;border:2px solid #fff;border-radius:6px;cursor:pointer;opacity:.4;-webkit-transition:background .5s,opacity .5s;-moz-transition:background .5s,opacity .5s;transition:background .5s,opacity .5s;}
+.home_banner .dots li.active{background:#fff;opacity:1}
+.home_index{display:block;margin:10px 10px 0;overflow:hidden}
+.home_nav li a{display:block;height:120px;text-align:center;color:#fff}
+.home_nav li em{ display:block;padding-top:5px;font-size:40px;line-height:80px}
+.home_news{background-color:#92cf68;width:32.8%;float:left;margin-right:0.8%}
+.home_news .icon:before{content:'\e629'}
+.home_recommend{background-color:#58b5e1;width:32.8%;float:left}
+.home_recommend .icon:before{content:'\e61d'}
+.home_service{background-color:#fcc954;width:32.8%;float:right}
+.home_service .icon:before{content:'\e61a'}
+.home_list{padding:20px 25px}
+.home_list li{padding:10px 0;margin-bottom:3px;background-color:#fff;font-size:100%;color:#0198dd} 
+.home_list li.ui-btn-hover-c{background-color:#f4fdd7;color:#9dc814}
+.home_list li a{text-decoration:none;color:#0098dd}
+.home_list li.ui-btn-hover-c a{color:#9dc814}
+.home_list .ui-li-icon{font-size:20px;top:10px}
+.home_list .ui-li-has-arrow .ui-btn-inner a.ui-link-inherit{padding-left:40px}
+.home_list li.adisabled a,.home_list li.adisabled a:active{color:#c9c9c9}
+.home_list li.adisabled .ui-li-icon,.home_list li.adisabled .ui-icon{color:#c9c9c9}
+
+.banner{background-image:url(../images/banner.jpg);background-repeat:no-repeat;background-size:100% 100%}
+.ban_logo{height:140px;text-align:center;overflow:hidden}
+.ban_logo em{display:block;margin-top:-40px;font-size:220px;color:#fff}
+.i_note{height:39px;background:url(../images/note.png) repeat-x;position:relative}
+.i_note dt{width:30px;float:left;text-align:right;line-height:39px;font-size:18px;color:#fff}
+.i_note dd{margin-left:35px;height:39px;position:relative;overflow:hidden}
+.i_note li{height:39px;line-height:39px;overflow:hidden;white-space: nowrap;text-overflow:ellipsis}
+.i_note a{font-size:100%;color:#fff;text-decoration:none}
+.index_list{padding:15px}
+.index_list li{padding:10px 0;border-top:1px solid #edeef3;background-color:#fff;font-size:100%;color:#0198dd} 
+.index_list li.ui-btn-hover-c{background-color:#f4fdd7;color:#9dc814}
+.index_list li a{text-decoration:none;color:#0098dd}
+.index_list li.ui-btn-hover-c a{color:#9dc814}
+.index_list .ui-li-icon{font-size:20px;top:10px}
+.index_list .ui-li-has-arrow .ui-btn-inner a.ui-link-inherit{padding-left:40px}
+.index_list li.adisabled a,.index_list li.adisabled a:active{color:#c9c9c9}
+.index_list li.adisabled .ui-li-icon,.index_list li.adisabled .ui-icon{color:#c9c9c9}
+/*账户*/
+.user_head{height:140px;background-image:url(../images/user.jpg);background-repeat:no-repeat;background-size:100% 100%}
+.user_wel{padding:45px 0 0 10px;line-height:160%;font-size:100%;color:#fff; text-shadow:1px 1px 2px #000}

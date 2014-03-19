@@ -1,0 +1,11 @@
+<div id="global_footer" data-role="footer" data-position="fixed" data-tap-toggle="false" data-theme="a" class="nav-footer-tab">
+    <div data-role="navbar" data-grid="d" data-theme="a" class="nav-footer-tab">
+        <ul>
+            <li><a href="#" id="footer_home_tab" data-theme="a" data-icon="custom">首页</a></li>
+            <li><a href="#" id="footer_product_tab" data-theme="a" data-icon="custom">导购</a></li>
+            <li><a href="#" id="footer_shopcart_tab" data-theme="a" data-icon="custom">购物车</a></li>
+            <li><a href="#" id="footer_workbench_tab" data-theme="a" data-icon="custom">我的直供</a></li>
+            <li><a href="#" id="footer_more_tab" data-theme="a" data-icon="custom">更多</a></li>
+        </ul>
+    </div>
+</div>

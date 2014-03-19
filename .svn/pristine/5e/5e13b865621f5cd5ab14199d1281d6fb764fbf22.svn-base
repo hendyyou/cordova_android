@@ -1,0 +1,47 @@
+<div data-role="page" id="product_classify_phone_page" data-url="product_classify_phone_page">
+	<div data-role="header" data-position="fixed">
+		<h1>导购</h1>
+	</div>
+	<!-- /header -->
+	<div data-role="content">
+
+		<br>
+		<br>		
+		<div>
+			<select name="select-brand" id="select-brand" tabindex="-1">
+				<option value="">产品品牌</option>
+			</select>
+		</div>
+		<br>
+		<div>
+			<select name="select-price" id="select-price" tabindex="-1">
+				<option value="">价格区间</option>
+			</select>
+		</div>
+		<br>
+		<div>
+			<select name="select-screen" id="select-screen" tabindex="-1">
+				<option value="">主显示屏</option>
+			</select>
+		</div>
+		<br>
+		<div>
+			<select name="select-nettype" id="select-nettype" tabindex="-1">
+				<option value="">网络制式</option>
+			</select>
+		</div>
+		<br>
+		<div>
+			<select name="select-os" id="select-os" tabindex="-1">
+				<option value="">操作系统</option>
+			</select>
+		</div>
+		<br>	
+		<br>
+		<div>
+		<a href="#" name="select-submit" id="select-submit" data-role="button" data-theme="b" >确定</a>
+		</div>
+	</div>
+</div>
+
+

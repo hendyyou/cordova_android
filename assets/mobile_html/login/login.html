@@ -1,0 +1,116 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="login" id="login_login">
+   <h1 class="l_logo"><em class="icon icon-logo"></em></h1>
+   <div class="l_form">
+     <dl>
+        <dt class="ui-icon ui-icon-user"></dt> 
+        <dd><input id="login_login_loginName" value="" type="text" placeholder="输入您的用户名"></dd>
+     </dl>
+     <dl>
+        <dt class="ui-icon icon-lock"></dt>
+        <dd><input id="login_login_password" value="" type="password" placeholder="输入您的密码"></dd>
+     </dl>
+     <p class="l_btn btn_w"><input type="button" onclick="login_login_submitLogin()" value="登录"></p>
+     <p class="l_link hide"><a href="javascript:void(0)">忘记密码？<em class="icon icon-link"></em></a></p>
+	</div>
+	<div style="color:#FFFFFF;text-align:center;position:absolute;left:0;bottom:10px;width:100%">客服热线：<span onclick="phoneCall('4001661660')">400-166-1660</span></div>
+	<script type="text/javascript">
+	//程序运行入口
+	executeAccess('login_login',false,function(){
+		login_login_reset();
+	});	   
+	function login_login_reset(){
+		var loginName = localStorage.getItem("login_login_loginName");
+		var password = localStorage.getItem("login_login_password");
+		if(!loginName)loginName = "";
+		if(!password)password = "";
+		loginName = $.trim(loginName);
+		password = $.trim(password);
+		if(loginName != "" && password != ""){
+			$("#login_login_loginName").val(loginName);
+			$("#login_login_password").val(password);
+			login_login_submitLogin();
+		}
+	}
+	/********************************************** 登录函数 ***************************************************/
+	$("#login_login .l_logo").unbind("click").bind("click",function(){
+		
+	});
+	function login_login_submitLogin(){
+		var loginName = $.trim($("#login_login_loginName").val());
+		var password = $.trim($("#login_login_password").val());
+		if(loginName == ""){
+			showTip("您的账号不能为空！");
+			return;	
+		}
+		if(password == ""){
+			showTip("您的密码不能为空！");
+			return;	
+		}
+		var param=[];
+		param.push('loginName='+loginName);
+		param.push('password='+password);
+		param.push('loginType=1');
+		ajax({
+			waitTagId:"center",
+			url: TERMINAL_URL + '/jsonrest/mobile/UserLogin/0/login',
+			type:'post',//非必须.默认get
+			data:param.join('&'),
+			dataType:'json',//非必须.默认text
+			async:true,//非必须.默认true
+			cache:false,//非必须.默认false
+			timeout:30000,//非必须.默认30秒
+			success:login_login_submitLoginSuccess//非必须
+		},loginName,password);
+	}
+	function login_login_submitLoginSuccess(data,loginName,password){
+		var errorCode = data.msg;
+		var someCode=data.entity;
+		if(!data || !data.msgCode || data.msgCode != 1){
+			localStorage.setItem("login_login_loginName","");
+			localStorage.setItem("login_login_password","");
+		}
+		if(data.msgCode=="1"){
+			localStorage.setItem("login_login_loginName",loginName);
+			localStorage.setItem("login_login_password",password);
+			var sUrl = "/index.html";
+			var stPage = $('#login_login')[0];
+			var toUrl=decodeURIComponent($.trim(getUrlParam.call(stPage,'toUrl')));
+			if(toUrl != '')sUrl = toUrl;
+			stPage.myUrl = "#login_login";
+			locationHref(sUrl);
+		}else if(data.msgCode=="2"){
+			if(errorCode=="-4"){
+				showTip("验证码不正确");
+			}
+			else if(errorCode=="03" || errorCode=="01"){
+				showTip("账户审核中...");
+			}
+			else if(errorCode=="02"){
+				showTip("会员名/手机号码或密码不正确");
+			}
+			else if(errorCode=="04"){
+				showTip("该账户已冻结，请联系客服");
+			}
+			else if(errorCode=="05"){
+				showTip("登录账号类型不正确");
+			}
+			else if(errorCode=="06"){
+				showTip("此账号已经登录，不能重复登录！请20分钟后再试");
+			}
+			else if(errorCode=="07"){
+				showTip("该用户还没有通过邮箱验证，请验证通过后再登录");
+			}
+			else if(errorCode=="08"){
+				showTip("该用户邮箱验证已经通过，请等待后台人员审核");
+			}
+			else{
+				showTip("登录失败，请稍后重试");
+			}
+		}
+		else{
+			showTip("登录失败，请稍后重试");
+		}
+	}
+</script>
+</div>

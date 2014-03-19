@@ -1,0 +1,12 @@
+@charset "utf-8";
+/*推送*/
+.pushpage .ui-btn-active {background-color:#5393C5;color: #FFFFFF;cursor: pointer;
+font-weight: 700;text-decoration: none;text-shadow: 0 1px 0 #3373A5;}
+.pushpage .ui-btn-corner-all {border-radius: 1em;}
+.pushpage .ui-btn-down-c {background-color:#D6D6D6;color: #222222;font-weight: 700;text-shadow: 0 1px 0 #FFFFFF}
+.pushpage .ui-shadow {background-color:#ecedef;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);}
+.pushpage li{margin-top:-1px;padding:0 20px;font-size:16px;border:1px solid #dbdbdb;background-color:#fff;overflow:hidden;zoom:1}
+.pushpage .text{float:left;line-height:50px}
+.pushpage li.mt20{margin-top:20px}
+.pushpage .push_btn{float:right;padding-top:5px}
+.push_note{text-align:right;font-size:12px;line-height:30px}

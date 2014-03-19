@@ -1,0 +1,235 @@
+<div data-role="page" class="page" id="order_orderConfirm" footer-focus="order_cartIndex">
+	  <div data-role="header" data-position="fixed" class="header">
+		   <a onclick="historyBack()"><em class="icon icon-back"></em></a><h1>订单详情</h1>
+	  </div>
+		<div data-role="content" class="order" id="order_orderConfirm_content">
+       <div class="order_box">
+            <dl class="order_caddr bb" id="order_orderConfirm_content_address">
+            </dl>
+            <div class="order_cpay">
+               <dl>
+                  <dt>支付方式：</dt>
+                  <dd>
+					<select id="order_orderConfirm_content_payType">
+					</select>
+				  </dd>
+               </dl>
+               <dl>
+					<dt>补货范围：</dt>
+					<dd>
+						<select disabled="disabled"><option>广东省</option>
+						</select>
+						<select id="order_orderConfirm_content_city">
+						</select>
+					</dd>
+               </dl>
+               <p class="order_cpaytxt"><input onkeyup="order_orderConfirm_leaveChar(this)" type="text" placeholder="您若对订单有其它需求，可在此备注"></p>
+            </div>
+       </div>
+       <div class="order_box">
+          <h2 class="order_ctitle">商品列表</h2>
+          <div class="order_clist">
+              <ul data-role="listview" id="order_orderConfirm_content_listview">
+              </ul>
+              <p class="order_more order_click_show" id="order_orderConfirm_more"></p>     
+          </div>
+          <dl class="order_ctotal">
+             <dd class="fl">商品总价：<strong id="order_orderConfirm_totalPrice"></strong></dd>
+             <dd class="fr">合计：<strong id="order_orderConfirm_allTotalPrice"></strong></dd>
+          </dl>   
+		</div>
+		<p class="order_dbtn btn_blue"><input type="button" id="order_orderConfirm_createOrder" onClick="order_orderConfirm_createOrder()" value="提交订单"></p>
+		</div>
+   <script type="text/javascript">
+	//程序运行入口
+	executeAccess('order_orderConfirm',true,function(){
+		order_orderConfirm_reset();
+		order_orderConfirm_getMessage();
+		order_orderConfirm_getCityMessage();
+	});
+	var order_orderConfirm_param = {};
+	function order_orderConfirm_reset(){
+		var stDom = $('#order_orderConfirm')[0];
+		order_orderConfirm_param.productId = getUrlParam.call(stDom,"productId");	//立即采购产品ID
+		order_orderConfirm_param.quantity = getUrlParam.call(stDom,"quantity");	//立即采购数量
+		order_orderConfirm_param.isShortcut = getUrlParam.call(stDom,"isShortcut");	//立即采购 0 否 1 是
+		order_orderConfirm_param.priceId = getUrlParam.call(stDom,"priceId");	//立即采购价格ID
+		order_orderConfirm_param.priceType = getUrlParam.call(stDom,"priceType");	//立即采购价格类型
+		order_orderConfirm_param.productRelation = getUrlParam.call(stDom,"productRelation");	//立即采购搭售产品关系
+		order_orderConfirm_param.withProductActivityId = getUrlParam.call(stDom,"withProductActivityId");	//立即采购搭售产品活动ID
+	}
+	function order_orderConfirm_getMessage(){
+		var url = '/jsonrest/mobile/Order/0/confirmOrder';
+		if(order_orderConfirm_param['isShortcut'] == 1){
+			url = '/jsonrest/mobile/Order/0/confirmOrder?saleOrderItemVO.productId='+order_orderConfirm_param['productId']
+					+'&saleOrderItemVO.quantity='+order_orderConfirm_param['quantity']+'&isShortcut='+order_orderConfirm_param['isShortcut']
+					+'&saleOrderItemVO.priceId='+order_orderConfirm_param['priceId']+'&saleOrderItemVO.priceType='+order_orderConfirm_param['priceType']
+					+'&saleOrderItemVO.productRelation='+order_orderConfirm_param['productRelation']
+					+'&saleOrderItemVO.withProductActivityId='+order_orderConfirm_param['withProductActivityId'];
+		}
+		ajax({
+			waitTagId:"center",
+			url:TERMINAL_URL + url,
+			type:'post',
+			dataType:'json',
+			async: true,
+			cache: false,
+			timeout: 30000,
+			error: function(){},
+			success: order_orderConfirm_getMessageSuccess
+		});
+	}
+	function order_orderConfirm_getMessageSuccess(data){
+		if(!checkJsonRight(data,"/order/order-confirm.html"))return;
+		if(data.msgCode != 1)return;
+		var html='';
+		var	allTotalPrice=0,totalPrice=0;
+		var order_orderConfirm_length_plag=0; //产品种类数
+		var consigneeAddressVOs=data.entity.consigneeAddressVOs;
+		if(null !=data.entity.consigneeAddressVOs && data.entity.consigneeAddressVOs.length > 0){			
+		html+='<dt>收货人：</dt><dd><p><span>'+consigneeAddressVOs[0].name+'</span>'+consigneeAddressVOs[0].mobile+'</p><p id="order_orderConfirm_address">'+consigneeAddressVOs[0].address+'<input type="hidden" value="'+consigneeAddressVOs[0].id+'"/></p></dd>';	
+		$('#order_orderConfirm_content_address').html(html);
+		jqmRefresh("order_orderConfirm_content_address");	
+		}
+		html='';
+		for(var t=0,tlength=data.entity.cartDetailVOs.length;t<tlength;t++){	
+		var cartProductVOs=data.entity.cartDetailVOs[t].cartProductVOs;
+		totalPrice +=data.entity.cartDetailVOs[t].total;
+		allTotalPrice +=data.entity.cartDetailVOs[t].total+data.entity.cartDetailVOs[t].freight;
+		for(var i=0,length=cartProductVOs.length;i<length;i++){ 
+			order_orderConfirm_length_plag++;
+			html+='<li class="'+((cartProductVOs[i].subCartProductVOs.length>0) ? "" :"bb ")+( order_orderConfirm_length_plag > 2 ? "  hide" : "")+'"><img onerror="this.src=\'/images/order/nopic_4.jpg\'" onclick="locationHref(\'/product/product-detail.html?productId='+cartProductVOs[i].productId+'\')"src="'+PHOTO_URL+cartProductVOs[i].picPath;
+			html+='"/><h3>'+cartProductVOs[i].brandName+''+cartProductVOs[i].productType+''+cartProductVOs[i].productColor+'</h3><p><span>'+cartProductVOs[i].productNum+'件</span>&yen;'+toPenny(cartProductVOs[i].subTotal)+'</p></li>';
+			var subCartProductVOs = cartProductVOs[i].subCartProductVOs;
+			if(subCartProductVOs.length>0){
+				for(var j=0,llength=subCartProductVOs.length;j<llength;j++){
+				html+='<li class="'+(j==(llength-1)? "bb" : " ")+(order_orderConfirm_length_plag > 2 ? " hide" : "")+'"><img onerror="this.src=\'/images/order/nopic_4.jpg\'" onclick="locationHref(\'/product/product-detail.html?productId='+subCartProductVOs[j].productId+'\')"src="'+PHOTO_URL+subCartProductVOs[j].picPath;
+				html+='"/><h3>'+subCartProductVOs[j].brandName+''+subCartProductVOs[j].productType+''+subCartProductVOs[j].productColor+'<span style="color:#fd6566;font-size:12px;"> (搭售产品)</span></h3><p><span>'+(subCartProductVOs[j].productNum*cartProductVOs[i].productNum)+'件</span>&yen;'+toPenny(subCartProductVOs[j].subTotal)+'</p></li>';
+				}
+			}
+		  }
+		}
+		$('#order_orderConfirm_content_listview').html(html);	
+		$('#order_orderConfirm_totalPrice').html('&yen;'+toPenny(totalPrice));
+		$('#order_orderConfirm_allTotalPrice').html('&yen;'+toPenny(allTotalPrice));
+		jqmRefresh("order_orderConfirm_content_listview");
+		if(order_orderConfirm_length_plag > 2){
+			html='<a onclick="order_orderConfirm_more()" href="javascript:void(0);">更多产品<em class="icon icon-down"></em></a>';
+			$('#order_orderConfirm_more').html(html);
+			$("#order_orderConfirm_more").show();
+		}
+	}
+	//获取地市
+	function order_orderConfirm_getCityMessage(){
+		ajax({
+			url:TERMINAL_URL+'/jsonrest/mobile/AreaDict/0/findAreaDict',
+			type:'post',
+			data: 'supperId=0',
+			dataType: 'json',
+			async: false,
+			cache: false,
+			timeout: 30000,
+			error: function(){},
+			success: order_orderConfirm_getCityMessageSuccess
+		});
+	}
+	function order_orderConfirm_getCityMessageSuccess(data){
+			if(!checkJsonRight(data,"/order/order-confirm.html"))return;
+			if(data.msgCode != 1){ return; }
+			var param ='';
+			var object = data.entity;
+			param+='<option value="">---请选择---</option>';
+			for(var i=0,len=object.length; i<len; i++){
+				param +='<option value="'+object[i].id+'">'+object[i].areaName+'</option>';
+			}
+			$("#order_orderConfirm_content_city").html(param);
+			jqmRefresh("order_orderConfirm_content_city");
+			param='';
+			param+='<option  value="1">线上支付</option>';
+			param+='<option  value="-1">线下支付</option>';
+			$("#order_orderConfirm_content_payType").html(param);
+			jqmRefresh("order_orderConfirm_content_payType");
+
+	}
+	//更多按钮
+	function order_orderConfirm_more(){
+			$('#order_orderConfirm_content_listview li').removeClass('hide');
+			$('#order_orderConfirm_more').hide();
+	}
+	//控制买家留言输入字符
+	function order_orderConfirm_leaveChar(obj){
+		var inputLength = obj.value.length;
+		if(inputLength>50)showTip('尊敬的用户，最多只能输入50个字，你已多输入'+(obj.value.length-50)+'个字！');
+	}
+	function order_orderConfirm_createOrder(){
+		$('#order_orderConfirm_createOrder').attr('disabled','disabled');
+		var param = [];
+		var addressId = $('#order_orderConfirm_address input').val();
+		var leaveMessage = $('#order_orderConfirm_content .order_cpaytxt input').val();
+		var cityList = $('#order_orderConfirm_content_city').val();
+		var payType = $('#order_orderConfirm_content_payType').val();
+		if(leaveMessage.length>50){showTip('留言信息最多为50个字！');return;}
+		if(!payType){
+			showTip('请选择支付方式！');
+			$('#order_orderConfirm_createOrder').removeAttr("disabled");
+			return;
+		}
+		if(!cityList){
+			showTip('请选择补货范围！');
+			$('#order_orderConfirm_createOrder').removeAttr("disabled");
+			return;
+		}
+		if(order_orderConfirm_param['isShortcut'] == 1){
+			param.push('isShortcut='+order_orderConfirm_param['isShortcut']);
+			param.push('saleOrderItemVO.priceId='+order_orderConfirm_param['priceId']);
+			param.push('saleOrderItemVO.priceType='+order_orderConfirm_param['priceType']);
+			param.push('saleOrderItemVO.productId='+order_orderConfirm_param['productId']);
+			param.push('saleOrderItemVO.quantity='+order_orderConfirm_param['quantity']);
+			param.push('saleOrderItemVO.productRelation='+order_orderConfirm_param['productRelation']);
+			param.push('saleOrderItemVO.withProductActivityId='+order_orderConfirm_param['withProductActivityId']);
+		}
+		param.push('addressId='+addressId);
+		param.push('replenishmentAreaId='+cityList);
+		param.push('payMode='+payType);
+		param.push('leaveInfo='+leaveMessage);
+		ajax({
+			waitTagId:"center",
+			url:TERMINAL_URL+'/jsonrest/mobile/Order/0/createOrder',
+			type:'post',
+			data: param.join('&'),
+			dataType: 'json',
+			async: true,
+			cache: false,
+			timeout: 30000,
+			error: function(){$('#order_orderConfirm_createOrder').removeAttr("disabled");},
+			success: order_orderConfirm_createOrderSuccess
+		});
+	}
+	function order_orderConfirm_createOrderSuccess(data){ 
+		if(data.msgCode != 1){
+			showTip('生成订单失败！');
+			$('#order_orderConfirm_createOrder').removeAttr("disabled");
+			return;
+		}
+		if(null != data.entity &&  data.entity.length>0){
+			var sucProductIds = null;
+			for(var i=0,ilength=data.entity.length;i<ilength;i++){
+				sucProductIds = data.entity[i].sucProductIds;
+				for(var k=0,len_k=sucProductIds.length;k<len_k;k++){
+					removeCardCookie(sucProductIds[k]);
+				}
+			}
+			var errorMsg = data.entity[0].errorMsg;
+			if(errorMsg){
+				showTip('由于库存不足或商品已经下架，生成订单失败！！');
+				$('#order_orderConfirm_createOrder').removeAttr("disabled");
+				return;}
+			else {
+				showTip('生成订单成功！！');
+				locationHref('/order/order-index.html');
+				$('#order_orderConfirm_createOrder').removeAttr("disabled");
+			}
+		}
+	}
+	</script>
+</div> 

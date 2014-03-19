@@ -1,0 +1,107 @@
+﻿<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_push" footer-focus="account_accountIndex">
+   <div data-role="header" data-position="fixed" class="header">
+     <a onclick="historyBack()"><em class="icon icon-back"></em></a>
+     <h1>系统设置</h1>
+  </div>
+  <div data-role="content" class="pushpage">
+      <ul>
+         <li><span class="text">政策推送</span>
+            <div class="push_btn">
+               <select id="account_push_policy" data-role="slider" class="onoff">
+                <option value="off">Off</option>
+                <option selected="selected" value="on">On</option>
+               </select>
+            </div>   
+         </li>
+         <li><span class="text">公告推送</span>
+            <div class="push_btn">
+               <select id="account_push_announcement" data-role="slider" class="onoff">
+                <option value="off">Off</option>
+                <option selected="selected" value="on">On</option>
+               </select>
+            </div>   
+         </li>
+         <li><span class="text">夜间推送</span>
+            <div class="push_btn">
+               <select id="account_push_night" data-role="slider" class="onoff">
+                <option value="off">Off</option>
+                <option selected="selected" value="on">On</option>
+               </select>
+            </div>   
+         </li>
+		 <li><span class="text">当前版本：<font id="account_push_versionNumber"></font></span><div class="push_btn"><p class="btn_blue"><input onclick="ccount_push_version()" type="button" value="更 新"></p></div></li>
+      </ul> 
+	  <p style="margin-top:20px" class="btn_blue"><input onclick="account_push_reLogin()" type="button" value="注销"></p>
+   </div>
+   <script type="text/javascript">
+	//程序运行入口
+	executeAccess('account_push',true,function(){
+		account_push_setButtonEvent();
+		account_push_setState();
+		ccount_push_version();
+	});
+	function account_push_setButtonEvent(){
+		$( "#account_push_policy,#account_push_announcement,#account_push_night").slider({
+			stop:function(event){
+				var sType = $.trim(this.id);
+				var sValue = $.trim(this.value);
+				localStorage.setItem(sType,sValue);
+				if(typeof(Utils) != 'undefined')Utils.pushSetting([sType,sValue]);
+				var id = $.trim(this.id);
+				if(id == "account_push_night" && sValue == "on"){
+					showTip("开启后，晚上22:00 ~ 早晨7:00将接收推送");
+				}
+			}
+		});	
+	}
+	function account_push_setState(){
+		var policy = localStorage.getItem("account_push_policy");
+		var announcement = localStorage.getItem("account_push_announcement");
+		var night = localStorage.getItem("account_push_night");
+		if(!policy)policy = "on";
+		if(!announcement)announcement = "on";
+		if(!night)night = "on";
+		$("#account_push_policy").val(policy).slider("refresh");
+		$("#account_push_announcement").val(announcement).slider("refresh");
+		$("#account_push_night").val(night).slider("refresh");
+	}
+	function account_push_reLogin(){
+		//为了注销时候，再次登录来取最新的用户名
+		$('#account_accountIndex_userName').html("");
+		localStorage.setItem("login_login_loginName","");
+		localStorage.setItem("login_login_password","");
+		locationHref("/login/login.html");
+	}
+	function ccount_push_version(){
+		ajax({
+			waitTagId:'center',
+			url:'/download/apk_gdmobile_client_update.xml',
+			type:'get',//非必须.默认get
+			async:true,//非必须.默认true
+			cache:false,//非必须.默认false
+			timeout:30000,//非必须.默认30秒
+			success:function(data){
+				var stVersion = data.match(/<[^<>]*?version[^<>]*?>([^<>]*?)<\/version>/i);
+				if(!stVersion || !stVersion.push || stVersion.length != 2)return;
+				stVersion[1] = $.trim(stVersion[1]);
+				ajax({
+					waitTagId:'center',
+					url:'/gdcache.manifest',
+					type:'get',//非必须.默认get
+					async:true,//非必须.默认true
+					cache:false,//非必须.默认false
+					timeout:30000,//非必须.默认30秒
+					success:function(data){
+						var stSubVersion = data.match(/version\s*(\d+)/i);
+						if(!stSubVersion || !stSubVersion.push || stSubVersion.length != 2)return;
+						stSubVersion[1] = $.trim(stSubVersion[1]);
+						if(stVersion[1] != "" && stSubVersion[1] != "")$('#account_push_versionNumber').html(stVersion[1]+'.'+stSubVersion[1]);	
+					}
+				});
+					
+			}//非必须
+		});
+	}
+	</script>
+</div> 

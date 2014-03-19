@@ -1,0 +1,51 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_accountIndex" footer-focus="account_accountIndex">
+	<div class="user_head">
+     <div class="user_wel" id="account_accountIndex_userName"></div>
+  </div>
+  <div data-role="content" class="index_list">
+		<ul data-role="listview">
+		    <li><em class="ui-li-icon icon icon-note"></em><a href="javascript:;" onclick="locationHref('/news/news-list.html')">政策公告</a></li>
+		    <li><em class="ui-li-icon icon icon-tag"></em><a href="javascript:;" onclick="locationHref('/account/address-index.html')">收货地址</a></li>
+		    <li><em class="ui-li-icon icon icon-acc"></em><a href="javascript:;" onclick="locationHref('/account/product-consult.html')">产品咨询</a></li>
+        	<li><em class="ui-li-icon icon icon-question"></em><a href="javascript:;" onclick="locationHref('/account/feedback-index.html')">意见反馈</a></li>
+			<li><em class="ui-li-icon icon icon-down"></em><a href="javascript:;" onclick="locationHref('/account/2d-code.html')">扫我下载</a></li>
+			<li><em class="ui-li-icon icon icon-push"></em><a href="javascript:;" onclick="locationHref('/account/push.html')">系统设置</a></li>
+		</ul>
+	</div>
+	<script type="text/javascript">
+	//程序运行入口
+	executeAccess('account_accountIndex',true,function(){
+		account_accountIndex_getUserInfo();	
+	});
+	function account_accountIndex_getUserInfo(){
+		var userName = $.trim($('#account_accountIndex_userName').html());
+		if(userName != "")return;
+		ajax({
+			waitTagId: "center",
+			url:TERMINAL_URL+"/jsonrest/mobile/UserLogin/0/getUserInfo",
+			type: 'get',
+			dataType: 'json',
+			async: true,
+			cache: false,
+			timeout: 30000,
+			success: account_accountIndex_getUserInfoSuccess
+		});
+	}
+	
+	function account_accountIndex_getUserInfoSuccess(data){
+		if(!checkJsonRight(data,"/account/account-index.html"))return;
+		globalUserInfo = data.entity;
+		if(data.entity){
+			var userInfo = data.entity;
+			var loginName = userInfo.loginName;
+			var name = userInfo.name;
+			var companyName = userInfo.companyName;
+			var userType = userInfo.userType;
+			var html = '您好，'+companyName+'-'+name+'<br />欢迎光临中国移动终端公司B2B平台'
+			$('#account_accountIndex_userName').html(html);
+		}
+		
+	}
+	</script>
+</div>

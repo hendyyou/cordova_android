@@ -1,0 +1,44 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="news_newsDetail" footer-focus="account_accountIndex">
+		<div data-role="header" data-position="fixed" class="header">
+			 <a onclick="historyBack()"><em class="icon icon-back"></em></a>
+			 <h1>政策公告</h1>
+		</div>
+		<div data-role="content" class="news_detail">
+        <h4 class="news_dtitle" id="news-newsDetail_title"></h4>
+        <div class="news_dcontent" id="news_newsDetail_content"></div>
+        <p class="news_dtime" id="news-newsDetail-time"></p>   
+    </div>
+	<script type="text/javascript">
+		executeAccess("news_newsDetail",true,function(){
+			var newsId = getUrlParam.call(this,"newsId");
+			news_newsDetail_getDetail(newsId);
+		});
+		function news_newsDetail_getDetail(newsId){
+			ajax({
+				waitTagId:'center',
+				url:TERMINAL_URL+'/jsonrest/mobile/DigiNews/'+newsId+'/findNews',
+				type:'post',//非必须.默认get
+				dataType:'json',//非必须.默认text
+				async:true,//非必须.默认true
+				cache:false,//非必须.默认false
+				timeout:30000,//非必须.默认30秒
+				success:news_newsDetail_getDetailSuccess
+			},newsId);
+		}
+		function news_newsDetail_getDetailSuccess(data,newsId){
+			if(!checkJsonRight(data,"/news/news-detail.html?newsId="+newsId))return;
+			var data = data.entity.content;
+			var sContent = data.content;
+			sContent = sContent.replace(/<img[^<>]*?\/?>/ig,function(sImg){
+					sImg = sImg.replace(/style[^<>]*?=["'][^<>]*?["']/ig,'');
+					sImg = sImg.replace(/<img/ig,'<img style="width:100%;height:auto" ');
+					return sImg; 	
+			});
+			$('#news-newsDetail_title').html(data.title);
+			$('#news-newsDetail_time').html(data.createTime);
+			$("#news_newsDetail_content").html(sContent);
+			jqmRefresh("news_newsDetail");
+		}
+	</script>
+</div>

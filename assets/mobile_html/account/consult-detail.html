@@ -1,0 +1,60 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_consultDetail" footer-focus="account_accountIndex">
+	<div data-role="header" data-position="fixed" class="header">
+		<a onclick="historyBack()"><em class="icon icon-back"></em></a>
+		<h1>产品咨询</h1>
+	</div>
+	<div data-role="content" class="main">
+		<div class="consult_detail" id="account_consultDetail_content"></div>
+    <script type="text/javascript">
+		executeAccess("account_consultDetail",true,function(){
+			var commentId = getUrlParam.call(this,"commentId");
+			account_consultDetail_getConsultDetail(commentId);
+		});
+		function account_consultDetail_getConsultDetail(commentId){
+			ajax({
+				waitTagId:'center',
+				url:TERMINAL_URL+'/jsonrest/mobile/Consulting/'+commentId+'/getByConsultingId',
+				data:'searchVO.currentPage=1&searchVO.pageSize=1',
+				type:'post',
+				dataType:'json',
+				async:true,
+				cache:false,
+				timeout:30000,
+				success:account_consultDetail_getConsultDetailSuccess
+			},commentId);	
+		}
+		function account_consultDetail_getConsultDetailSuccess(data,commentId){
+			if(!checkJsonRight(data,"/account/consult-detail.html?commentId="+commentId))return;
+			var dataval = data.entity.resultList;
+			if(dataval.length != 1)return;
+			var html = '';
+			html += '<dl><dt>提交时间：</dt><dd>';
+			html += dataval[0].consultingTime;
+			html += '<span class="fr fb cgray">';
+			if(dataval[0].replyState == 0){
+				html += '未回复';
+			}else if(dataval[0].replyState ==1){
+				html += '已回复';
+			}
+			html += '</span></dd></dl><dl><dt>咨询产品：</dt><dd>';
+			html += dataval[0].productBrand + dataval[0].productType + ' ' + dataval[0].productColor;
+			html += '</dd></dl><dl><dt>咨询内容：</dt><dd><p>';
+			html += dataval[0].question;
+			html += '</p></dd></dl><div class="dashline"></div><dl>';
+			if(dataval[0].replyState == 0){
+				html += '暂无回复信息';
+			}else if(dataval[0].replyState ==1){
+				html += '<dt>答复时间：</dt><dd>';
+				html += dataval[0].replyTime;
+				html += '</dd></dl><dl><dt>答复内容：</dt><dd><p>';
+				html += dataval[0].reply;
+				html += '</p></dd>'
+			}
+			html += '</dl>';
+			$("#account_consultDetail_content").html(html);
+			jqmRefresh("account_consultDetail_content");
+		}
+	</script>
+	</div> 
+</div>

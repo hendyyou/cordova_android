@@ -1,0 +1,60 @@
+<div data-role="page" id="shopcart_index_page" data-url="shopcart_index_page">
+    <div data-role="header" data-position="fixed">
+        <h1>购物车</h1>
+    </div>
+    <!-- /header -->
+    <div data-role="content">
+        <div id="shopcart_index_order_info_div">
+            <div id="shopcart_index_order_list_div">
+            </div>
+            <div id="shopcart_index_consignee_info_div">
+                <ul data-role="listview" data-inset="false">
+                    <li>
+                        <a href="#" id="shopcart_index_goto_consignee">
+                            <h2>收货人信息</h2>
+
+                            <p>收货人：<span id="shopcart_index_consignee"></span></p>
+
+                            <p>手机：<span id="shopcart_index_consignee_mobile"></span></p>
+
+                            <p>收货地址：<span id="shopcart_index_consignee_address"></span></p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div id="shopcart_index_invoice_info_div">
+                <ul data-role="listview" data-inset="false">
+                    <li data-icon="false">
+                        <a href="#">
+                            <h2>发票信息</h2>
+
+                            <p><span id="shopcart_index_invoice_type_name"></span></p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <p>&nbsp</p>
+                <p>
+                    <a href="#" id="shopcart_index_goto_next" data-role="button" data-icon="check" data-iconpos="left">去结算</a>
+                </p>
+            </div>
+        </div>
+        <div id="shopcart_index_no_data_div">
+            <div>
+                <img alt="无数据logo" src="img/shopcart/shop_cart_no_data.png">
+
+                <p><label>购物车暂时无数据！</label></p>
+            </div>
+            <div>
+                <p>&nbsp</p>
+                <p>
+                    <a href="#" id="shopcart_index_nodata_gotoproduct" data-role="button" data-icon="check"
+                       data-iconpos="left">去逛逛</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- /content -->
+</div>
+<!-- /page -->

@@ -1,0 +1,197 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="product_productList" footer-focus="product_productIndex">
+		<div data-role="header" data-position="fixed" class="header" id="product_productList_header">
+			 <a onclick="historyBack()"><em class="icon icon-back"></em></a>
+			 <h1 id="product_productList_typeName">产品中心</h1>
+			 <a style="display:none" href="javascript:;">品牌</a>
+		</div>
+		<div data-role="content" class="main" id="product_productList_content">
+			<div>
+				<div class="search">
+				   <label for="product_productList_text" class="icon icon-search"></label>
+				   <input xxonfocus="product_productList_showTempBox()" value=""
+				   type="search" id="product_productList_text">
+				   <a href="javascript:;" onClick="product_productList_search()" class="search_btn">搜索</a>
+				</div>
+				<div class="product_list">
+					<ul data-role="listview" id="product_productList_productListBox">
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="hide" id="product_productList_search_background" onclick="product_productList_search_backgroundClick(event)" style="position:fixed; top:0; left:0; background-color:rgba(0,0,0,0.7); width:100%; height:100%; z-index:99999">
+			<div class="search">
+           		<label for="product_productList_tempText" class="icon icon-search"></label>
+           		<input type="search" id="product_productList_tempText">
+           		<a href="javascript:;" onclick="product_productList_tempSearch()" 
+				class="search_btn">搜索</a>
+			</div>
+			<div class="search_hot">
+			   <h2 style="color:#FFFFFF">热门搜索词：</h2>
+			   <ul>
+				  <li><a onclick="product_productList_search_index(this)" href="javascript:;">8825D</a></li>
+				  <li><a onclick="product_productList_search_index(this)" href="javascript:;">C88213</a></li>
+				  <li><a onclick="product_productList_search_index(this)" href="javascript:;">三星</a></li>
+				  <li><a onclick="product_productList_search_index(this)" href="javascript:;">TCL</a></li>
+				  <li><a onclick="product_productList_search_index(this)" href="javascript:;">C88213</a></li>
+				  <li><a onclick="product_productList_search_index(this)" href="javascript:;">联想</a></li>
+				  <li><a onclick="product_productList_search_index(this)" href="javascript:;">读卡器</a></li>
+				  <li><a onclick="product_productList_search_index(this)" href="javascript:;">中兴</a></li>
+				  <li><a onclick="product_productList_search_index(this)" href="javascript:;">华为</a></li>
+			   </ul>
+			</div>
+		</div>
+    <script type="text/javascript">
+	/************************ 程序运行入口 ****************************/
+	executeAccess('product_productList',true,function(){
+		product_productList_reset();
+		var keyword = getUrlParam.call(this,"keyword");
+		var type = getUrlParam.call(this,"type");
+		$("#product_productList_text").val(decodeURIComponent(keyword));
+		product_productList_param.type = type;
+		product_productList_setTypeName(type);
+		product_productList_getProductList(type);
+	},{onPullDown:product_productList_onPullDown,onPullUp:product_productList_onPullUp});
+	function product_productList_onPullDown(event){
+		product_productList_param.currentPage = 1;
+		product_productList_param.pullDirection = "down";
+		product_productList_getProductList(product_productList_param.type);
+	}
+	function product_productList_onPullUp(event){
+		product_productList_param.currentPage++;
+		product_productList_param.pullDirection = "up";
+		product_productList_getProductList(product_productList_param.type);
+	}
+	/**************************** 获取数据 ********************************/
+	var product_productList_param = {};
+	function product_productList_reset(){
+		$('#product_productList_text').val("");
+		$('#product_productList_tempText').val("");
+		product_productList_param = {
+			type:0,
+			pullDirection:'down',
+			currentPage:1,
+			pageSize:10
+		}		
+	}
+	function product_productList_setTypeName(iType){
+		var sText = "";
+		iType = parseInt(iType);
+		switch(iType){
+			case 1 : sText = "手机"; break;	
+			case 2 : sText = "配件"; break;
+			case 3 : sText = "热卖专区"; break;
+			case 4 : sText = "新品专区"; break;
+			case 5 : sText = "重点机型专区"; break;
+		}	
+		$("#product_productList_typeName").html(sText);
+	}
+	/********************************  拉动事件 *****************************************/
+	
+	function product_productList_getProductList(type){
+		type = parseInt(type);
+		if(isNaN(type))type = 0;
+		var url = "";
+		var count = product_productList_param.pageSize;
+		var page = product_productList_param.currentPage;
+		var waitTagId = "center";
+		if(type == 0){
+			var sText = $.trim($("#product_productList_text").val());
+			url = "/jsonrest/mobile/Product/1/search?searchProductVO.keyWord="+sText+"&searchProductVO.currentPage="+page+"&searchProductVO.pageSize="+count;	
+		}
+		else if(type == 1)url = "/jsonrest/mobile/Product/1/search?searchProductVO.type=mobile&searchProductVO.currentPage="+page+"&searchProductVO.pageSize="+count;
+		else if(type == 2)url = "/jsonrest/mobile/Product/1/search?searchProductVO.type=mobilefitting&searchProductVO.currentPage="+page+"&searchProductVO.pageSize="+count;
+		else if(type == 3)url = "/jsonrest/mobile/Home/0/productCote?coteType=1&count="+count+"&coteName=hot_selling";
+		else if(type == 4)url = "/jsonrest/mobile/Home/0/productCote?coteType=1&count="+count+"&coteName=latest_market";
+		else if(type == 5)url = "/jsonrest/mobile/Home/0/productCote?coteType=1&count="+count+"&coteName=hot_recommend";
+		ajax({
+			waitTagId:waitTagId,
+			url:TERMINAL_URL+url,
+			type:'post',
+			dataType:'json',
+			async:true,
+			cache:false,
+			timeout:30000,
+			success:product_productList_getProductListSuccess
+		},type);		
+	}
+	function product_productList_getProductListSuccess(data,type){
+		if(!checkJsonRight(data,"/product/product-list.html"))return;
+		var href = "/product/product-detail.html?productId=";
+		var picPath = "";
+		var brandName = "";
+		var describe  = "";
+		var custPrice = "";
+		var html='';
+		var content = [];
+		if(data.entity && data.entity.content)content = data.entity.content;
+		if(data.entity && data.entity.currentPage)product_productList_param.currentPage = data.entity.currentPage;
+		for(var i=0,length=content.length;i<length; i++){
+			if(type==0||type==1||type==2){
+			picPath = PHOTO_URL+content[i].picPath;
+			brandName = content[i].brandName+' '+content[i].productType+' '+content[i].color;
+			describe = content[i].describe;
+			custPrice = toPenny(content[i].custPrice);
+			}
+			else if(type==3||type ==4||type==5){
+			picPath = PHOTO_URL+content[i].picPath;
+			brandName = content[i].brandName+' '+content[i].productType+' '+content[i].color;
+			describe = content[i].description;
+			custPrice =toPenny(content[i].custPrice);			
+			}	
+			html+='<li><a href="javascript:;" onclick="locationHref(\''+href+content[i].id+'\')"><img style="width:80px;height:60px" src="';
+			if(content[i].picPath){html+=picPath;}
+			else{html+='../images/order/nopic_4.jpg';}
+			html+='" onerror="this.src=\'/images/order/nopic_4.jpg\'"/><h3>'+brandName+'</h3><p class="cgray">'+describe+'</p>';
+			if(custPrice)html+='<h5 class="cblue">&yen;'+custPrice+'</h5>';
+			html+='</a></li>';
+		}
+		if(product_productList_param.pullDirection == "down")$('#product_productList_productListBox').html(html);
+		else if(product_productList_param.pullDirection == "up")$('#product_productList_productListBox').append(html);
+		jqmRefresh("product_productList_productListBox");
+		if(type == 3 || type == 4 || type == 5)$("#product_productList .more-list-button").hide();
+		else $("#product_productList .more-list-button").show()
+	}
+	/**************************** 搜索 ********************************/
+	function product_productList_showTempBox(){
+		var product_productList_onfocus_ptop = $('#product_productList').css('padding-top');
+		var	product_productList_onfocus_mtop = "-"+product_productList_onfocus_ptop;
+		$("#product_productList_header").animate({
+			marginTop:product_productList_onfocus_mtop},200);
+		$("#product_productList_content").animate({
+			marginTop:product_productList_onfocus_mtop},200,function product_productList_onfocus_background(){
+			$("#product_productList_search_background").removeClass('hide');
+		});
+		$("#product_productList_text").blur();
+	}
+	function product_productList_closeTempBox(){
+		$("#product_productList_search_background").addClass('hide');	
+		$("#product_productList_header").animate({
+			marginTop:"0px"},200);
+		$("#product_productList_content").animate({
+			marginTop:"0px"},200);	
+	}
+	function product_productList_search(){
+		product_productList_param.type = 0;
+		product_productList_param.currentPage = 1;
+		product_productList_param.pullDirection = "down";
+		product_productList_getProductList(product_productList_param.type);
+	}
+	function product_productList_search_index(obj){
+		var sText = $.trim($(obj).text());
+		$('#product_productList_tempText').val(sText);
+		product_productList_tempSearch();
+	}
+	function product_productList_tempSearch(){
+		var sText = $.trim($("#product_productList_tempText").val());
+		$("#product_productList_text").val(sText).blur();
+		product_productList_closeTempBox();
+		product_productList_search();
+	}
+	function product_productList_search_backgroundClick(event){
+		var id = "";
+		if(event && event.target)id = $.trim(event.target.id);
+		if(id == "product_productList_search_background")product_productList_closeTempBox();
+	}
+	</script>
+</div>

@@ -1,0 +1,66 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="news_newsList" footer-focus="account_accountIndex">
+	<div data-role="header" data-position="fixed" class="header">
+		 <a onclick="historyBack()"><em class="icon icon-back"></em></a>
+		 <h1>政策公告</h1>
+	</div>
+	<div data-role="content" class="main">
+		<div class="news_list">  
+			<ul data-role='listview' id="news_newsList_content">  
+			</ul>    
+		</div> 
+	</div>
+    <script type="text/javascript">
+        executeAccess("news_newsList",true,function(){
+			news_newsList_reset();
+            news_newsList_getContent();
+        },{onPullDown:news_newsList_onPullDown,onPullUp:news_newsList_onPullUp});
+        function news_newsList_onPullDown(event){
+        	news_newsList_param.currentPage = 1;
+        	news_newsList_param.pullDirection = "down";
+        	news_newsList_getContent();
+        }
+        function news_newsList_onPullUp(event){
+        	news_newsList_param.currentPage++;
+        	news_newsList_param.pullDirection = "up";
+        	news_newsList_getContent();
+        }
+        var news_newsList_param = {};
+		function news_newsList_reset(){
+			news_newsList_param = {
+            	currentPage:1,
+            	pageSize:10,
+            	pullDirection : 'down'
+        	}	
+		}
+        function news_newsList_getContent(){
+        	var waitTagId = "center";
+            ajax({
+                waitTagId:waitTagId,
+                url:TERMINAL_URL+'/jsonrest/mobile/DigiNews/1/searchNews',
+                type:'get',//非必须.默认get
+                data:'searchNewsVO.state=1&searchNewsVO.currentPage='+news_newsList_param.currentPage+'&searchNewsVO.pageSize='+news_newsList_param.pageSize,//非必须,默认空字符串
+                dataType:'json',//非必须.默认text
+                async:true,//非必须.默认true
+                cache:false,//非必须.默认false
+                timeout:30000,//非必须.默认30秒
+                error:function(){}, //非必须
+                success:news_newsList_getContentSuccess
+            });
+        }
+		function news_newsList_getContentSuccess(data){
+			if(!checkJsonRight(data,"/news/news-list.html"))return;
+			var dataList = [];
+			if(data.entity && data.entity.content && data.entity.content.resultList)dataList = data.entity.content.resultList;
+			if(data.entity && data.entity.content && data.entity.content.currentPage)news_newsList_param.currentPage = data.entity.content.currentPage;
+			var html='';
+			for(var i = 0, len = dataList.length; i < len; i++){
+				var data = dataList[i];
+				html += '<li><a href="javascript:locationHref(\'/news/news-detail.html?newsId='+data.id+'\')"><h4>政策公告<span>'+data.createTime+'</span></h4><p>'+data.title+'</p></a></li>';
+			}
+            if(news_newsList_param.pullDirection == "down")$('#news_newsList_content').html(html);
+            else if(news_newsList_param.pullDirection == "up")$('#news_newsList_content').append(html);
+            jqmRefresh("news_newsList_content");	
+		}
+    </script>
+</div>

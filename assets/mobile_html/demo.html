@@ -1,0 +1,47 @@
+﻿<script src="/include/header.js"></script>
+<!--
+	命名顺序,规范
+	1，首先命名data-role="page"元素的id,命名规范是   [文件夹名_文件夹名_]文件名   ，文件名部分不包括扩展名,文件名单词之间采用驼峰写法,
+	例子：假如根目录下面的/order/order-index.html,所以它的pageId=order_orderIndex
+	2，元素id的命名规范是  id="pageId_名字"  , 例子的元素id   ==>        id="order_orderIndex_元素名字"
+	3，全局变量的命名规范是 var pageId_名字  , 例子的全局变量名   ==>   var  order_orderIndex_变量名
+	4，全局函数的命名规范是 function pageId_名字  , 例子的全局函数名   ==>   function order_orderIndex_函数名
+-->
+<div data-role="page" class="page" id="order_orderIndex" footer-focus="account_accountIndex">
+	<div data-role="header" class="banner">
+  	</div>
+	<div data-role="content" class="index_list" id="order_orderIndex_content">
+		<ul data-role="listview">
+		    <li class="mobile_event"><em class="ui-li-icon icon icon-txt"></em><a id="order_orderIndex_myOrder" href="#">安慰大我的订单</a></li>
+		    <li class="mobile_event"><em class="ui-li-icon icon icon-user"></em><a onclick="location.href='demo.html'">信息中心</a></li>
+		    <li class="mobile_event"><em class="ui-li-icon icon icon-star"></em><a href="#">我的收藏</a></li>
+			<li class="mobile_event"><em class="ui-li-icon icon icon-star"></em><a href="#">我的收藏</a></li>
+			<li class="mobile_event"><em class="ui-li-icon icon icon-star"></em><a href="#">我的收藏</a></li>
+			<li class="mobile_event"><em class="ui-li-icon icon icon-star"></em><a href="#">我的收藏</a></li>
+			<li class="mobile_event"><em class="ui-li-icon icon icon-star"></em><a href="#">我的收藏</a></li>
+			<li class="mobile_event"><em class="ui-li-icon icon icon-star"></em><a href="#">我的收藏</a></li>
+			<li class="mobile_event"><em class="ui-li-icon icon icon-star"></em><a id="info"  href="#">我的收藏</a></li>
+		</ul>
+	</div>
+	<script type="text/javascript">
+	//程序运行入口
+	//第一个参数：页面id,第二个参数：是否加载尾部导航,第三个参数是入口,第四个参数是下拉,上拉
+	executeAccess('order_orderIndex',true,function(){
+		
+	},{onPullDown:order_orderIndex_onPullDown,onPullUp:order_orderIndex_onPullUp});
+	//全局标量
+	var order_orderIndex_userInfo = ""
+	//全局函数
+	function order_orderIndex_getData(){
+		
+	}
+	function order_orderIndex_onPullDown(event){
+		$('#info').html('下拉成功!');
+		//写拉数据的ajax
+	}
+	function order_orderIndex_onPullUp(event){
+		$('#info').html('上拉成功!');
+		//写拉数据的ajax
+	}
+	</script>
+</div>

@@ -1,0 +1,411 @@
+package com.digione.gdmobile.android;
+
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.*;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.*;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebStorage;
+import android.webkit.WebView;
+import android.widget.LinearLayout;
+import com.digione.gdmobile.android.bean.ImageBean;
+import com.digione.gdmobile.android.common.*;
+import com.digione.gdmobile.android.utils.ToastUtil;
+import org.apache.cordova.Config;
+import org.apache.cordova.CordovaActivity;
+import org.apache.cordova.CordovaWebViewClient;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class MainActivity extends CordovaActivity {
+	private ConnectivityManager connectivityManager;
+	private NetworkInfo info;
+	private AlertDialog alertDialog;
+
+    private ImageBean imageBean;
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor editor;
+    private boolean hasUpdate = false;
+    private String bashPath = "";
+    private int isAdRemove=0; //  2：表示页面已经加载完毕；4：表示页面加载完，并且等待时间已到。
+    private Timer timer ;
+    private Handler handler = new Handler() {
+	    @Override
+	    public void handleMessage(Message msg) {
+	        //---
+	    	if(msg.what == Constants.MsgCode.AD_TIMEOUT){
+	    		if(isAdRemove==4){	 //如果页面已加载完毕，且2秒时间到时，那么停止展示。   			
+	    			MainActivity.super.removeSplashScreen();
+	    			timer.cancel();
+	    			isAdRemove=0;
+	    		}else if(isAdRemove>=2){	    			
+	    			isAdRemove++;
+	    		}
+	    	}
+	    }
+	};
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+        preferences = getSharedPreferences(Constants.IMAGE_UPDATE_INFO, Context.MODE_PRIVATE);
+        editor = preferences.edit();
+        bashPath = this.getFilesDir().getAbsolutePath() + Constants.DISK_IMAGE_PATH;
+        //下载更新图片的更新文件
+        String url =getString(R.string.data_base_url)+ getString(R.string.image_update_url);
+        File updateImage = new File(bashPath);
+        if (!updateImage.exists()) {
+            updateImage.mkdir();
+        }
+        File xmlFile = new File(bashPath + url.substring(url.lastIndexOf("/") + 1));
+        DownLoadTask imageDownLoadTask = new DownLoadTask(url, xmlFile.getAbsolutePath(), Constants.THREADCOUNT);
+        imageDownLoadTask.setListener(updateXmlDownlaodListener);
+        ThreadPoolManager.getInstance().addTask(imageDownLoadTask);
+
+		Intent intent = getIntent();
+		// 是否同时包含了FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY和FLAG_ACTIVITY_TASK_ON_HOME。如果是，则说明是从近期列表启动的。
+		// 此时任务中intent的messageCallback必须清除。
+		if (intent != null && ((intent.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0)
+				&& ((intent.getFlags() & Intent.FLAG_ACTIVITY_TASK_ON_HOME) != 0)) {
+			String callbackString = intent.getStringExtra(Constants.MESSAGE_CALLBACK_KEY);
+			if (callbackString != null && (!callbackString.equals("") || callbackString != "")) {
+				intent.removeExtra(Constants.MESSAGE_CALLBACK_KEY);
+			}
+		}
+		super.init();
+		
+		super.appView.setBackgroundResource(R.drawable.gd_splash);
+		timer = new Timer();
+		TimerTask task = new TimerTask() {
+		    @Override
+		    public void run() {
+		        // TODO Auto-generated method stub		       
+		        handler.sendEmptyMessage(Constants.MsgCode.AD_TIMEOUT);
+		    }
+		};
+		//1秒后超时。之后每0.5秒再发一次，直到页面加载结束
+		timer.schedule(task, 1000,500);
+
+		// super.appView.clearCache(true);
+		super.appView.setWebViewClient(new CordovaWebViewClient(this, super.appView) {
+
+			@Override
+			public void onPageFinished(WebView arg0, String arg1) { // TODO Auto-generated method stub
+				super.onPageFinished(arg0, arg1);
+
+				if (arg1.contains(Constants.SUB_PAGE_NAME)) {
+					LogCustom.e("onPageFinished..." + arg1);
+					//页面加载完毕。定时					
+		    		isAdRemove=2;
+		    		
+					changePageByIntent(getIntent());
+				}
+
+			}
+		});
+
+		super.appView.setWebChromeClient(new WebChromeClient() {
+			// 扩充缓存的容量
+			@Override
+			public void onReachedMaxAppCacheSize(long spaceNeeded, long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater) {
+				quotaUpdater.updateQuota(spaceNeeded * 2);
+			}
+
+			// 扩充数据库的容量
+			public void onExceededDatabaseQuota(String url, String databaseIdentifier, long currentQuota,
+					long estimatedSize, long totalUsedQuota, WebStorage.QuotaUpdater quotaUpdater) {
+				quotaUpdater.updateQuota(estimatedSize * 2);
+			}
+
+		});
+
+		
+		
+        String filePath = preferences.getString(Constants.IMAGE_NAME_+"1", "");
+        File image = new File(filePath);
+        if ((filePath != "" || !filePath.equals("")) && image.exists() && image.length() > 0) {
+            Drawable drawable = Drawable.createFromPath(filePath);
+            showSplashScreen(120000, drawable);
+        } else {
+            super.setIntegerProperty(Constants.SPLASH_SCREEN_PROPERTY, R.drawable.gd_splash);
+        }
+
+		// 监测网络状态的服务
+		IntentFilter mFilter = new IntentFilter();
+		mFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+		registerReceiver(mReceiver, mFilter);
+
+		// 定时拉取数据的服务
+
+		startService(new Intent(this, TimeService.class));
+
+		WebSettings webSettings = appView.getSettings();
+		// 初始缓存大小为8M
+		webSettings.setAppCacheMaxSize(1024 * 1024 * 8);
+		String appCachePath = getApplicationContext().getDir(Constants.CACHEDIR, Context.MODE_PRIVATE).getPath();
+		// LogCustom.d("-----"+appCachePath+"-----");
+		webSettings.setAppCachePath(appCachePath);
+		webSettings.setAllowFileAccess(true);
+		webSettings.setAppCacheEnabled(true);
+		webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+
+		// 启用数据库
+		webSettings.setDatabaseEnabled(true);
+		String dir = this.getApplicationContext().getDir(Constants.DATABASE_DIR, Context.MODE_PRIVATE).getPath();
+		// 设置数据库路径
+		webSettings.setDatabasePath(dir);
+		// 使用localStorage则必须打开
+		webSettings.setDomStorageEnabled(true);
+		// 最大加载超时时间设置为2分钟
+		super.setIntegerProperty(Constants.TIMEOUT_PROPERTY, 120000);
+		super.loadUrl(Config.getStartUrl(), 120000);
+		// super.loadUrl("file:///android_asset/www/index.html")
+		overridePendingTransition(0, 0);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		LogCustom.e("onResume()");
+	}
+
+	/**
+	 * 来自消息提示点击的intent
+	 */
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		LogCustom.e("onNewIntent()");
+		changePageByIntent(intent);
+	}
+
+	private void changePageByIntent(Intent intent) {
+		String messageCallbackString = intent.getStringExtra(Constants.MESSAGE_CALLBACK_KEY);
+
+		if (messageCallbackString != null && (!messageCallbackString.equals("") || messageCallbackString != "")) {
+			intent.putExtra(Constants.MESSAGE_CALLBACK_KEY, "");
+			intent.removeExtra(Constants.MESSAGE_CALLBACK_KEY);
+			appView.loadUrl("javascript:" + messageCallbackString);
+		}
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		unregisterReceiver(mReceiver);
+	}
+
+	private BroadcastReceiver mReceiver = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+
+			String action = intent.getAction();
+			if (action.equals(ConnectivityManager.CONNECTIVITY_ACTION)) {
+				LogCustom.d("网络状态已经改变");
+				connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+				if (info == connectivityManager.getActiveNetworkInfo()) {
+					return;
+				}
+				info = connectivityManager.getActiveNetworkInfo();
+				if (info != null && info.isAvailable()) {
+					String name = info.getTypeName();
+					LogCustom.d("当前网络名称：" + name);
+
+					ToastUtil.showToast(context, getString(R.string.network_available), ToastUtil.LENGTH_LONG);
+
+					// doSomething()
+				} else {
+					LogCustom.d("网络不可用" + context.getPackageName());
+
+					runOnUiThread(new Runnable() {
+						public void run() {
+							appView.loadUrl(getString(R.string.no_network_callback_js));
+						}
+					});
+					// doSomething()
+				}
+			}
+		}
+	};
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, 1, 1, getString(R.string.quit)).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {// 得到被点击的item的itemId
+		case 1:// 对应的ID就是在add方法中所设定的Id
+
+			Dialog dialog = null;
+			CustomDialog.Builder customBuilder = new CustomDialog.Builder(MainActivity.this);
+			customBuilder.setMessage(getString(R.string.confirm_exit))
+					.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							if (dialog != null) {
+								dialog.dismiss();
+							}
+
+						}
+
+					}).setPositiveButton(getString(R.string.confirm), new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							finish();
+							android.os.Process.killProcess(android.os.Process.myPid());
+							System.exit(0);
+						}
+					});
+			dialog = customBuilder.create();
+			dialog.show();
+			break;
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+    private DownLoadTask.DownlaodListener updateXmlDownlaodListener = new DownLoadTask.DownlaodListener() {
+        @Override
+        public void update(int total, int len, int threadid, String filePath) {
+            LogCustom.i("total=" + threadid + ",len=" + len + ",threadid=" + threadid + ", filePath" + filePath);
+        }
+
+        @Override
+        public void downLoadFinish(int totalSucess, String filePath) {
+            LogCustom.i("downLoadFinish totalSucess=" + totalSucess + ", filePath" + filePath);
+            if (totalSucess == Constants.THREADCOUNT) {
+                File file = new File(filePath);
+                FileInputStream fis = null;
+                if (file != null && file.exists()) {
+                    try {
+                        fis = new FileInputStream(file);
+                        imageBean = ImageUpdateXmlParse.doParse(fis);
+                        float currentVersion = preferences.getFloat(Constants.IMAGE_VERSION, -1);
+                        int fileCount = 0;
+                        LogCustom.i("currentVersion=" + currentVersion + ", imageBean Version " + imageBean.getVersion());
+                        if (imageBean.getVersion() > currentVersion && imageBean.getUrls().size() > 0) {
+                            //根据imagebean urls下载
+                            for (String url : imageBean.getUrls()) {
+                                //获取文件名
+                                String imageName = url.substring(url.lastIndexOf("/") + 1);
+                                File imageFile = new File(bashPath + imageName);
+                                DownLoadTask imageDownLoadTask =
+                                        new DownLoadTask(url, imageFile.getAbsolutePath(), Constants.THREADCOUNT);
+                                imageDownLoadTask.setListener(imageDownlaodListener);
+                                ThreadPoolManager.getInstance().addTask(imageDownLoadTask);
+                                fileCount++;
+                                editor.putString(Constants.IMAGE_NAME_ + fileCount, (bashPath + imageName));
+                            }
+                            editor.putInt(Constants.IMAGE_COUNT + fileCount,imageBean.getUrls().size());
+                            editor.commit();
+                        }
+
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } finally {
+                        if (fis != null) {
+                            try {
+                                fis.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+        @Override
+        public void downLoadError(int type) {
+            LogCustom.i("downLoadError type=" + type);
+
+        }
+    };
+
+    private DownLoadTask.DownlaodListener imageDownlaodListener = new DownLoadTask.DownlaodListener() {
+        @Override
+        public void update(int total, int len, int threadid, String filePath) {
+            LogCustom.i("total=" + threadid + ",len=" + len + ",threadid=" + threadid + ", filePath=" + filePath);
+        }
+
+        @Override
+        public void downLoadFinish(int totalSucess, String filePath) {
+            LogCustom.i("downLoadFinish totalSucess=" + totalSucess + ", filePath=" + filePath);
+            if (totalSucess == Constants.THREADCOUNT) {
+                if (imageBean != null && !hasUpdate) {
+                    hasUpdate = true;
+                    //保持版本和文件名
+                    editor.putFloat(Constants.IMAGE_VERSION, imageBean.getVersion());         
+                    editor.commit();
+                }
+            }
+        }
+
+        @Override
+        public void downLoadError(int type) {
+            LogCustom.i("downLoadError type=" + type);
+        }
+    };
+
+    protected void showSplashScreen(final int time, final Drawable drawable) {
+        final CordovaActivity that = this;
+
+        Runnable runnable = new Runnable() {
+            public void run() {
+                // Get reference to display
+                Display display = getWindowManager().getDefaultDisplay();
+
+                // Create the layout for the dialog
+                LinearLayout root = new LinearLayout(that.getActivity());
+                root.setMinimumHeight(display.getHeight());
+                root.setMinimumWidth(display.getWidth());
+                root.setOrientation(LinearLayout.VERTICAL);
+                root.setBackgroundColor(that.getIntegerProperty("backgroundColor", Color.BLACK));
+                root.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                   ViewGroup.LayoutParams.MATCH_PARENT, 0.0F));
+                //  root.setBackgroundResource(that.splashscreen);
+               // root.setBackground(drawable);
+                root.setBackgroundDrawable(drawable);
+
+                // Create and show the dialog
+                splashDialog = new Dialog(that, android.R.style.Theme_Translucent_NoTitleBar);
+                // check to see if the splash screen should be full screen
+                if ((getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) ==
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN) {
+                    splashDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                                                      WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                }
+                splashDialog.setContentView(root);
+                splashDialog.setCancelable(false);
+                splashDialog.show();
+
+                // Set Runnable to remove splash screen just in case
+             /*   final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        removeSplashScreen();
+                    }
+                }, time);*/
+            }
+        };
+        this.runOnUiThread(runnable);
+    }
+}

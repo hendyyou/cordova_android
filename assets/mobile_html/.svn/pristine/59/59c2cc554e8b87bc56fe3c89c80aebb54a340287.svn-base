@@ -1,0 +1,88 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="order_orderIndex" footer-focus="index">
+<div data-role="header" data-position="fixed" class="header">
+	<a onclick="historyBack()"><em class="icon icon-back"></em></a>
+	<h1>我的订单</h1>
+</div>
+<div data-role="content" id="order_orderIndex_contentBox" class="order"><div id="order_orderIndex_content"></div></div>
+<script type="text/javascript">
+executeAccess('order_orderIndex',true,function(){
+	order_orderIndex_reset();
+	order_orderIndex_getList();
+},{onPullDown:order_orderIndex_onPullDown,onPullUp:order_orderIndex_onPullUp});
+function order_orderIndex_onPullDown(event){
+	order_orderIndex_param.currentPage = 1;
+	order_orderIndex_param.pullDirection = "down";
+	order_orderIndex_getList();
+}
+function order_orderIndex_onPullUp(event){
+	order_orderIndex_param.currentPage++;
+	order_orderIndex_param.pullDirection = "up";
+	order_orderIndex_getList();
+}
+
+var order_orderIndex_param = {};
+function order_orderIndex_reset(){
+	order_orderIndex_param = {
+		currentPage : 1,
+		pageSize : 5,
+		pullDirection : 'down'
+	};	
+}
+function order_orderIndex_getList(){
+	var param = [];
+	param.push('searchSaleOrderVO.pageSize='+order_orderIndex_param.pageSize);
+	param.push('searchSaleOrderVO.currentPage='+order_orderIndex_param.currentPage);
+	var waitTagId = "center";
+	ajax({
+		waitTagId: waitTagId,
+		url: TERMINAL_URL + '/jsonrest/mobile/Order/0/search',
+		type: 'post',
+		data: param.join('&'),
+		dataType: 'json',
+		async: true,
+		cache: false,
+		timeout: 30000,
+		success: order_orderIndex_getListSuccess
+	});
+}
+function order_orderIndex_getListSuccess(data){
+	if(!checkJsonRight(data,"/order/order-index.html"))return;
+	var resultList = [];
+	if(data.entity && data.entity.resultList)resultList = data.entity.resultList;
+	if(data.entity && data.entity.currentPage)order_orderIndex_param.currentPage = data.entity.currentPage;
+	var html = '';
+	for(var i=0,length=resultList.length; i<length; i++){
+		var orderList = resultList[i], productQuantity = 0, productHtml = '';
+		for(var j=0,j_len=orderList.cartProductVOs.length; j<j_len; j++){
+			var cartProductVO = orderList.cartProductVOs[j];
+			productQuantity += cartProductVO.productNum;
+			productHtml += '<dl class=" '+(j>1?' hide ':'')+'"><dt><img style="width:100px;height:75px" src="'+ (PHOTO_URL+cartProductVO.picPath) 
+							+'" onerror="this.src=\'/images/order/nopic_4.jpg\'" alt="" /></dt>'
+							+ '<dd>' + cartProductVO.brandName + ' ' + cartProductVO.productType + ' ' + cartProductVO.productColor+'<br/> '+cartProductVO.productNum
+							+ '件</dd></dl>';
+		}
+		html += '<div class="order_box"><div class="order_ititle"><h2 class="clearfix"><span class="fr">共' + productQuantity + '件</span>订单号：' 
+				+ orderList.orderNo + '</h2><p class="order_istatus">'+ orderList.statusName + '</p></div>'
+				+ '<div class="order_ilist"><a href="javascript:;" onclick="locationHref(\'/order/order-detail.html?orderId='+orderList.orderId+'\')">';
+		
+		html += productHtml + '</a><span class="icon icon-right"></span></div>';
+		if(orderList.cartProductVOs.length > 2){ html += '<p class="order_more"><a href="javascript:void(0);">更多产品<em class="icon icon-down"></em></a></p>'; }
+		html += '<dl class="order_itotal">';
+		if(orderList.status == 1){ html += '<dt class="btn_agray"><input type="button" value="去支付" class="mybtn" /></dt>'; }
+		html += '<dd>时间：2013-03-22<br/>总金额：<strong>&yen;' + toPenny(orderList.total) + '</strong></dd></dl></div>';
+	}
+	if(order_orderIndex_param.pullDirection == "down")$('#order_orderIndex_content').html(html);
+	else if(order_orderIndex_param.pullDirection == "up")$('#order_orderIndex_content').append(html);
+	$('#order_orderIndex_content .order_more').off("tap").on('tap',function(){
+		if($(this).prev('.order_ilist').find('dl').eq(2).css('display') == 'block'){
+			$(this).html('<a href="javascript:void(0);">更多产品<em class="icon icon-down"></em></a>').prev('.order_ilist').find('dl:gt(1)').hide();
+		}else{
+			$(this).html('<a href="javascript:void(0);">收起<em class="icon icon-up"></em></a>').prev('.order_ilist').find('dl').show();
+		}
+		$("#order_orderIndex_contentBox").iscrollview("refresh");
+	});
+	jqmRefresh('order_orderIndex_content');
+}
+</script>
+</div> 

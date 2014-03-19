@@ -1,0 +1,80 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_feedbackEdit" footer-focus="account_accountIndex">
+		<div data-role="header" data-position="fixed" class="header">
+			 <a onclick="historyBack()"><em class="icon icon-back"></em></a>
+			  <h1>投诉与建议</h1>
+		</div>
+	  <div data-role="content" class="main">
+        <div class="feedback_form">
+             <dl class="f_type">
+                 <dt>反馈类型:</dt>
+                 <dd><select id="account_feedbackEdit_suggestionsType" name="suggestionsType">
+                    <option value="1">订单类</option>
+                    <option value="2">APP类</option>
+                    <option value="3">客户服务</option>
+                    <option value="4">其他</option>
+                 </select></dd>
+             </dl>  
+             <p class="p_txt"><textarea rows="" cols="" name="content" id="account_feedbackEdit_content" placeholder="请填写反馈内容"></textarea></p>
+             <p class="p_txt"><input type="text" name="mobile" id="account_feedbackEdit_mobile" placeholder="请填写您的手机号码"></p>
+        </div>     
+		  	<p class="btn_blue"><input onclick="account_feedbackEdit_submit()" type="button" value="提交"></p>
+	  </div>
+	<script type="text/javascript">
+		executeAccess("account_feedbackEdit",true,function(){
+			$('#account_feedbackEdit_content').val('');
+			$('#account_feedbackEdit_mobile').val('');
+		});
+		
+		//表单验证
+		function account_feedbackEdit_validate(){
+			var content = $.trim($('#account_feedbackEdit_content').val());
+			var mobile = $.trim($('#account_feedbackEdit_mobile').val());
+			var pattern = /^[\d]{11}$/;
+			if(content.length > 400){
+				showTip('反馈内容，最多400汉字!');
+				return false;
+			}
+			if(!pattern.test(mobile)){
+				showTip('手机号码为11个数字！');
+				return false;
+			}
+			return true;
+		}
+		//表单提交
+		function account_feedbackEdit_submit(){
+			if(!account_feedbackEdit_validate()){
+				return;
+			}
+			var suggestionsType = $('#account_feedbackEdit_suggestionsType').val();
+			var content = $.trim($('#account_feedbackEdit_content').val());
+			var mobile = $.trim($('#account_feedbackEdit_mobile').val());
+			var param = [];
+			param.push('suggestionsVO.suggestionsType='+suggestionsType);
+			param.push('suggestionsVO.content='+content);
+			param.push('suggestionsVO.mobile='+mobile);
+			ajax({
+			    url:TERMINAL_URL+"/jsonrest/mobile/Suggestions/0/create",
+				type:'get',
+				data:param.join('&'),
+				dataType:'json',
+				async:true,
+				cache:false,
+				timeout:30000,
+				error:account_feedbackEdit_addError, 
+				success:account_feedbackEdit_addSuccess
+			});
+		}
+		
+		function account_feedbackEdit_addSuccess(data){
+			if(!checkJsonRight(data,"/account/feedback-edit.html"))return;
+			showTip('反馈提交成功！');
+			locationHref('/account/feedback-index.html');	
+		}
+		function account_feedbackEdit_addError(data){
+			if(!checkJsonRight(data,"/account/feedback-edit.html"))return;
+			showTip('反馈提交失败，请联系管理员！');
+			return;
+		}
+	</script>
+</div>

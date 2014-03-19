@@ -1,0 +1,90 @@
+<script src="/include/header.js"></script>
+<div data-role="page" class="page" id="account_productConsult" footer-focus="account_accountIndex">
+	<div data-role="header" data-position="fixed" class="header">
+		 <a onclick="historyBack()"><em class="icon icon-back"></em></a>
+		 <h1>产品咨询</h1>
+	</div>
+	<div data-role="content" class="main">
+		<div class="cart_index hide">
+			<h4 class="icon icon-smile"></h4>
+			<span>您还没进行过产品咨询</span>
+		</div>
+		<div class="consult_list">
+			<ul data-role="listview" id="account_productConsult_list"></ul>
+		</div>
+<script type="text/javascript">
+/**************************** 程序运行入口 ********************************/
+executeAccess("account_productConsult",true,function(){
+		account_productConsult_reset();
+		account_productConsult_getConsultList();
+ },{onPullDown:account_productConsult_onPullDown,onPullUp:account_productConsult_onPullUp});
+
+function account_productConsult_onPullDown(event){
+	account_productConsult_param.currentPage = 1;
+	account_productConsult_param.pullDirection = "down";
+	account_productConsult_getConsultList();
+}
+function account_productConsult_onPullUp(event){
+	account_productConsult_param.currentPage++;
+	account_productConsult_param.pullDirection = "up";
+	account_productConsult_getConsultList();
+}
+/**************************** 获取数据 ********************************/
+var account_productConsult_param = {};
+function account_productConsult_reset(){
+	account_productConsult_param = {
+		pullDirection:"down",
+		currentPage:1,
+		pageSize:10
+	}
+}
+function account_productConsult_getConsultList(){
+	var count = account_productConsult_param.pageSize;
+	var page = account_productConsult_param.currentPage;
+	var waitTagId = "center";
+	ajax({
+		waitTagId:waitTagId,
+		url:TERMINAL_URL+'/jsonrest/mobile/Consulting/0/getAll?searchVO.currentPage='+page+'&searchVO.pageSize='+count,
+		type:'post',//非必须.默认get
+		dataType:'json',//非必须.默认text
+		async:true,//非必须.默认true
+		cache:false,//非必须.默认false
+		timeout:30000,//非必须.默认30秒
+		error:function(){}, //非必须
+		success:account_productConsult_getConsultListSuccess
+	});
+}
+function account_productConsult_getConsultListSuccess(data){
+	if(!checkJsonRight(data,"/account/product-consult.html"))return;
+	var dataList = [];
+	if(data.entity && data.entity.resultList)dataList = data.entity.resultList;
+	if(data.entity && data.entity.currentPage)account_productConsult_param.currentPage = data.entity.currentPage;
+	var length = dataList.length;
+	var html='';
+	for(var i=0,j=dataList.length;i<j;i++){
+		html += '<li><a href="javascript:;" onclick="locationHref(\'/account/consult-detail.html?commentId=';
+		html += dataList[i].consultingId;
+		html += '\')"><dl><dt>提交时间：</dt><dd><strong class="fr cgray">';
+		if(dataList[i].replyState == 0){
+			html += '未回复';
+		}else if(dataList[i].replyState ==1){
+			html += '已回复';
+		}
+		html += '</strong>';
+		html += dataList[i].consultingTime;
+		html += '</dd></dl><dl><dt>咨询产品：</dt><dd>';
+		html += dataList[i].productBrand + dataList[i].productType + ' ' + dataList[i].productColor;
+		html += '</dd></dl><dl><dt>咨询内容：</dt><dd>';
+		html += dataList[i].question;
+		html += '</dd></dl></a></li>';
+	}
+	if(account_productConsult_param.pullDirection == "down")$('#account_productConsult_list').html(html);
+	else if(account_productConsult_param.pullDirection == "up")$('#account_productConsult_list').append(html);
+	var sContent = $.trim($('#account_productConsult_list').html());
+	if(sContent == "")$(".cart_index").show();
+	else $(".cart_index").hide();
+	jqmRefresh("account_productConsult_list");
+}
+</script>
+</div>
+</div>
